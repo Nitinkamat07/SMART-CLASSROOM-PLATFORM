@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Smart Classroom</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .quiz-card { background:#fff; border-radius:8px; padding:18px; margin-bottom:12px; box-shadow:0 1px 6px rgba(0,0,0,.08); border-left:4px solid #667eea; display:flex; justify-content:space-between; align-items:center; }
+        .quiz-card .quiz-meta { font-size:13px; color:#7f8c8d; margin-top:4px; }
+        .badge { display:inline-block; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:600; }
+        .badge-green { background:#e8f5e9; color:#2e7d32; }
+        .badge-red   { background:#fce4ec; color:#c62828; }
+        .badge-blue  { background:#e8eaf6; color:#3949ab; }
+        .quiz-attempt-box { background:#fff; border-radius:10px; padding:25px; box-shadow:0 2px 10px rgba(0,0,0,.1); }
+        .timer-bar { background:#667eea; color:#fff; padding:10px 20px; border-radius:8px; font-size:1.2rem; font-weight:700; display:inline-block; margin-bottom:20px; }
+        .mcq-card { background:#f8f9fa; border:1px solid #e0e0e0; border-radius:8px; padding:20px; margin-bottom:15px; }
+        .mcq-card .q-text { font-weight:600; margin-bottom:12px; color:#2c3e50; }
+        .option-label { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:6px; margin-bottom:8px; cursor:pointer; border:1px solid #ddd; transition:background .2s; }
+        .option-label:hover { background:#e8eaf6; }
+        .option-label input { accent-color:#667eea; }
+        .option-label.selected { background:#e8eaf6; border-color:#667eea; }
+        .score-card { text-align:center; padding:40px; background:#fff; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.1); }
+        .score-card .big-score { font-size:4rem; font-weight:700; color:#667eea; }
+        .score-card .score-label { font-size:1.1rem; color:#7f8c8d; margin-top:8px; }
+        .result-row { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:#f8f9fa; border-radius:6px; margin-bottom:8px; }
+        .toast { position:fixed; bottom:30px; right:30px; background:#2c3e50; color:#fff; padding:14px 22px; border-radius:8px; z-index:9999; display:none; font-size:14px; }
+        .toast.show { display:block; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-user-graduate"></i>
+                <h3>Student Portal</h3>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#overview" class="menu-link active"><i class="fas fa-tachometer-alt"></i> Overview</a></li>
+                <li><a href="#attendance" class="menu-link"><i class="fas fa-camera"></i> Mark Attendance</a></li>
+                <li><a href="#schedule" class="menu-link"><i class="fas fa-calendar"></i> My Schedule</a></li>
+                <li><a href="#records"     class="menu-link"><i class="fas fa-clipboard-list"></i> Attendance Records</a></li>
+                <li><a href="#attend-quiz" class="menu-link"><i class="fas fa-pencil-alt"></i> Attend Quiz</a></li>
+                <li><a href="#my-results"  class="menu-link"><i class="fas fa-trophy"></i> My Results</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <header class="dashboard-header">
+                <h1>Student Dashboard</h1>
+                <div class="header-actions">
+                    <a href="/" class="btn btn-secondary">Logout</a>
+                </div>
+            </header>
+
+            <!-- Overview Section -->
+            <section id="overview" class="dashboard-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fas fa-percentage"></i>
+                        <div class="stat-info">
+                            <h3 id="attendance-percentage">0%</h3>
+                            <p>Attendance Rate</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="stat-info">
+                            <h3 id="classes-attended">0</h3>
+                            <p>Classes Attended</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-calendar-day"></i>
+                        <div class="stat-info">
+                            <h3 id="today-classes">0</h3>
+                            <p>Today's Classes</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-clock"></i>
+                        <div class="stat-info">
+                            <h3 id="next-class">--:--</h3>
+                            <p>Next Class</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>Today's Schedule</h3>
+                        <div id="today-schedule" class="schedule-list">
+                            <!-- Today's classes -->
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card">
+                        <h3>Quick Actions</h3>
+                        <div class="quick-actions">
+                            <button class="action-btn" onclick="showSection('attendance')">
+                                <i class="fas fa-camera"></i>
+                                Mark Attendance
+                            </button>
+                            <button class="action-btn" onclick="showSection('schedule')">
+                                <i class="fas fa-calendar"></i>
+                                View Schedule
+                            </button>
+                            <button class="action-btn" onclick="showSection('records')">
+                                <i class="fas fa-clipboard-list"></i>
+                                View Records
+                            </button>
+                            <button class="action-btn" onclick="showSection('attend-quiz')">
+                                <i class="fas fa-pencil-alt"></i>
+                                Attend Quiz
+                            </button>
+                            <button class="action-btn" onclick="showSection('my-results')">
+                                <i class="fas fa-trophy"></i>
+                                My Results
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Attendance Section -->
+            <section id="attendance" class="dashboard-section">
+                <div class="section-header">
+                    <h2>Mark Attendance</h2>
+                    <p>Use face recognition to mark your attendance</p>
+                </div>
+                
+                <div class="attendance-container">
+                    <div class="camera-section">
+                        <div class="camera-container">
+                            <video id="video" autoplay muted></video>
+                            <canvas id="canvas" style="display: none;"></canvas>
+                        </div>
+                        
+                        <div class="camera-controls">
+                            <button id="start-camera" class="btn btn-primary">
+                                <i class="fas fa-camera"></i> Start Camera
+                            </button>
+                            <button id="capture-photo" class="btn btn-success" style="display: none;">
+                                <i class="fas fa-camera-retro"></i> Capture & Mark Attendance
+                            </button>
+                            <button id="stop-camera" class="btn btn-danger" style="display: none;">
+                                <i class="fas fa-stop"></i> Stop Camera
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="attendance-info">
+                        <h3>Instructions</h3>
+                        <ul>
+                            <li>Click "Start Camera" to begin</li>
+                            <li>Position your face clearly in the frame</li>
+                            <li>Click "Capture & Mark Attendance" when ready</li>
+                            <li>Wait for confirmation</li>
+                        </ul>
+                        
+                        <div id="attendance-status" class="status-message">
+                            Ready to mark attendance
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Schedule Section -->
+            <section id="schedule" class="dashboard-section">
+                <h2>My Schedule</h2>
+                
+                <div class="schedule-container">
+                    <div class="schedule-filters">
+                        <button class="filter-btn active" data-day="all">All Days</button>
+                        <button class="filter-btn" data-day="0">Monday</button>
+                        <button class="filter-btn" data-day="1">Tuesday</button>
+                        <button class="filter-btn" data-day="2">Wednesday</button>
+                        <button class="filter-btn" data-day="3">Thursday</button>
+                        <button class="filter-btn" data-day="4">Friday</button>
+                    </div>
+                    
+                    <div id="schedule-grid" class="schedule-grid">
+                        <!-- Schedule items will be populated here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Records Section -->
+            <section id="records" class="dashboard-section">
+                <h2>Attendance Records</h2>
+                
+                <div class="records-filters">
+                    <select id="month-filter">
+                        <option value="">All Months</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+                
+                <div class="table-container">
+                    <table id="attendance-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Subject</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Classroom</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Attendance records will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <!-- ── ATTEND QUIZ ──────────────────────────────────── -->
+            <section id="attend-quiz" class="dashboard-section">
+                <h2><i class="fas fa-pencil-alt"></i> Attend Quiz</h2>
+
+                <!-- Quiz list view -->
+                <div id="quiz-list-view">
+                    <div class="form-group" style="max-width:300px;margin-bottom:20px;">
+                        <label>Filter by Subject</label>
+                        <input type="text" id="quiz-subject-filter" placeholder="e.g. Data Structures"
+                            style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;"
+                            oninput="filterQuizList()">
+                    </div>
+                    <div id="available-quizzes"><p style="color:#aaa">Loading quizzes...</p></div>
+                </div>
+
+                <!-- Quiz attempt view (hidden until student clicks Attempt) -->
+                <div id="quiz-attempt-view" style="display:none;">
+                    <div class="quiz-attempt-box">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                            <h3 id="attempt-quiz-title" style="color:#2c3e50;"></h3>
+                            <div class="timer-bar"><i class="fas fa-clock"></i> <span id="quiz-timer">00:00</span></div>
+                        </div>
+                        <div id="mcq-questions"></div>
+                        <div style="text-align:right;margin-top:20px;">
+                            <button class="btn btn-secondary" onclick="cancelAttempt()" style="margin-right:10px;">Cancel</button>
+                            <button class="btn btn-primary" onclick="submitAttempt()"><i class="fas fa-paper-plane"></i> Submit Quiz</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Score view (shown after submit) -->
+                <div id="quiz-score-view" style="display:none;">
+                    <div class="score-card">
+                        <i class="fas fa-star" style="font-size:3rem;color:#f39c12;"></i>
+                        <div class="big-score" id="score-display">0/0</div>
+                        <div class="score-label" id="score-percent"></div>
+                        <div id="score-message" style="margin-top:15px;font-size:1rem;"></div>
+                        <button class="btn btn-primary" style="margin-top:25px;" onclick="backToQuizList()">
+                            <i class="fas fa-arrow-left"></i> Back to Quizzes
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── MY RESULTS ─────────────────────────────────────── -->
+            <section id="my-results" class="dashboard-section">
+                <h2><i class="fas fa-trophy"></i> My Results</h2>
+                <div id="my-results-list"><p style="color:#aaa">Loading...</p></div>
+            </section>
+
+        </main>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/student-dashboard.js') }}"></script>
+    <script>
+    // ── Sidebar nav ───────────────────────────────────────────────────────────
+    document.querySelectorAll('.menu-link').forEach(link => {
+        link.addEventListener('click', e => {
+            e.preventDefault();
+            const target = link.getAttribute('href').substring(1);
+            showSection(target);
+        });
+    });
+
+    function showSection(id) {
+        document.querySelectorAll('.dashboard-section').forEach(s => s.classList.remove('active'));
+        const el = document.getElementById(id);
+        if (el) el.classList.add('active');
+        document.querySelectorAll('.menu-link').forEach(l =>
+            l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+        if (id === 'attend-quiz') loadAvailableQuizzes();
+        if (id === 'my-results')  loadMyResults();
+    }
+
+    function toast(msg, ok = true) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.style.background = ok ? '#27ae60' : '#e74c3c';
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ── Quiz list ─────────────────────────────────────────────────────────────
+    let allQuizzes = [];
+
+    async function loadAvailableQuizzes() {
+        document.getElementById('quiz-list-view').style.display = 'block';
+        document.getElementById('quiz-attempt-view').style.display = 'none';
+        document.getElementById('quiz-score-view').style.display = 'none';
+
+        const res = await fetch('/api/get-quizzes');
+        allQuizzes = await res.json();
+        renderQuizList(allQuizzes);
+    }
+
+    function renderQuizList(quizzes) {
+        const el = document.getElementById('available-quizzes');
+        const now = new Date();
+        const active = quizzes.filter(q => new Date(q.deadline) > now);
+        if (!active.length) { el.innerHTML = '<p style="color:#aaa">No active quizzes available.</p>'; return; }
+        el.innerHTML = active.map(q => `
+            <div class="quiz-card">
+                <div>
+                    <strong>${q.title}</strong>
+                    <div class="quiz-meta">
+                        <span class="badge badge-blue">${q.subject}</span>
+                        <span class="badge" style="background:#f3e5f5;color:#6a1b9a;margin-left:4px;">${q.chapter}</span>
+                        &nbsp;${q.question_count} questions &nbsp;|&nbsp;
+                        <i class="fas fa-clock"></i> ${q.time_limit} min &nbsp;|&nbsp;
+                        Deadline: ${new Date(q.deadline).toLocaleString()}
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="white-space:nowrap;" onclick="startQuiz(${q.id}, '${q.title}', ${q.time_limit})">
+                    <i class="fas fa-play"></i> Attempt
+                </button>
+            </div>`).join('');
+    }
+
+    function filterQuizList() {
+        const kw = document.getElementById('quiz-subject-filter').value.toLowerCase();
+        renderQuizList(allQuizzes.filter(q =>
+            q.subject.toLowerCase().includes(kw) || q.title.toLowerCase().includes(kw)));
+    }
+
+    // ── Quiz attempt ──────────────────────────────────────────────────────────
+    let currentQuizId = null, timerInterval = null, timeLeft = 0;
+
+    async function startQuiz(quizId, title, timeLimitMin) {
+        const res  = await fetch(`/api/attempt-quiz/${quizId}`);
+        const data = await res.json();
+        if (!data.success && data.message) { toast(data.message, false); return; }
+
+        currentQuizId = quizId;
+        document.getElementById('attempt-quiz-title').textContent = data.title || title;
+        document.getElementById('quiz-list-view').style.display   = 'none';
+        document.getElementById('quiz-attempt-view').style.display = 'block';
+        document.getElementById('quiz-score-view').style.display  = 'none';
+
+        // Render MCQs
+        const container = document.getElementById('mcq-questions');
+        container.innerHTML = data.questions.map((q, i) => `
+            <div class="mcq-card">
+                <div class="q-text">${i+1}. ${q.question}</div>
+                ${q.options.map((opt, oi) => `
+                <label class="option-label" onclick="selectOption(this)">
+                    <input type="radio" name="ans-${q.id}" value="${oi+1}">
+                    ${opt}
+                </label>`).join('')}
+            </div>`).join('');
+
+        // Start timer
+        timeLeft = (data.time_limit || timeLimitMin) * 60;
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            const m = String(Math.floor(timeLeft / 60)).padStart(2,'0');
+            const s = String(timeLeft % 60).padStart(2,'0');
+            document.getElementById('quiz-timer').textContent = `${m}:${s}`;
+            if (timeLeft <= 0) { clearInterval(timerInterval); submitAttempt(); }
+        }, 1000);
+    }
+
+    function selectOption(label) {
+        const name = label.querySelector('input').name;
+        document.querySelectorAll(`input[name="${name}"]`).forEach(r =>
+            r.closest('.option-label').classList.remove('selected'));
+        label.classList.add('selected');
+    }
+
+    async function submitAttempt() {
+        clearInterval(timerInterval);
+        const answers = {};
+        document.querySelectorAll('.mcq-card').forEach(card => {
+            const checked = card.querySelector('input[type="radio"]:checked');
+            if (checked) answers[checked.name.replace('ans-','')] = checked.value;
+        });
+
+        const res  = await fetch('/api/submit-quiz', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quiz_id: currentQuizId, answers })
+        });
+        const data = await res.json();
+
+        document.getElementById('quiz-attempt-view').style.display = 'none';
+        document.getElementById('quiz-score-view').style.display   = 'block';
+
+        if (data.success) {
+            document.getElementById('score-display').textContent  = `${data.score}/${data.total}`;
+            document.getElementById('score-percent').textContent  = `${data.percentage}%`;
+            document.getElementById('score-message').innerHTML    =
+                data.percentage >= 50
+                ? '<span style="color:#27ae60"><i class="fas fa-check-circle"></i> Passed! Great work.</span>'
+                : '<span style="color:#e74c3c"><i class="fas fa-times-circle"></i> Below 50%. Keep practising!</span>';
+        } else {
+            document.getElementById('score-display').textContent = data.message || 'Error';
+        }
+    }
+
+    function cancelAttempt() {
+        clearInterval(timerInterval);
+        document.getElementById('quiz-attempt-view').style.display = 'none';
+        document.getElementById('quiz-list-view').style.display    = 'block';
+    }
+
+    function backToQuizList() {
+        document.getElementById('quiz-score-view').style.display = 'none';
+        loadAvailableQuizzes();
+    }
+
+    // ── My Results ────────────────────────────────────────────────────────────
+    async function loadMyResults() {
+        const res  = await fetch('/api/my-results');
+        const data = await res.json();
+        const el   = document.getElementById('my-results-list');
+        if (!data.length) { el.innerHTML = '<p style="color:#aaa">No quiz attempts yet.</p>'; return; }
+        el.innerHTML = data.map(r => `
+            <div class="result-row">
+                <div>
+                    <strong>${r.quiz_title}</strong>
+                    <div style="font-size:13px;color:#7f8c8d;">${r.subject} &nbsp;|&nbsp; ${r.timestamp}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:1.4rem;font-weight:700;color:#667eea;">${r.score}/${r.total}</div>
+                    <span class="badge ${r.percentage >= 50 ? 'badge-green' : 'badge-red'}">${r.percentage}%</span>
+                </div>
+            </div>`).join('');
+    }
+    </script>
+</body>
+</html>

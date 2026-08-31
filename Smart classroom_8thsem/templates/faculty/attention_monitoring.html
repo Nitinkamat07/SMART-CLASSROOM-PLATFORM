@@ -1,0 +1,195 @@
+<!-- Attention Monitoring Dashboard -->
+<!-- Add this to faculty dashboard -->
+
+<div class="attention-monitoring-section">
+    <h2>📊 Student Attention Monitoring</h2>
+    
+    <!-- Control Panel -->
+    <div class="attention-controls">
+        <div class="form-group">
+            <label>Select Class</label>
+            <select id="classSelect">
+                <option value="1">Class A - Data Structures</option>
+                <option value="2">Class B - Algorithms</option>
+                <option value="3">Class C - Machine Learning</option>
+            </select>
+        </div>
+        
+        <button id="startAttentionBtn" class="btn btn-primary" onclick="startAttentionMonitoring()">
+            <i class="fas fa-play"></i> Start Monitoring
+        </button>
+        <button id="stopAttentionBtn" class="btn btn-secondary" style="display:none;" onclick="stopAttentionMonitoring()">
+            <i class="fas fa-stop"></i> Stop Monitoring
+        </button>
+    </div>
+    
+    <!-- Video Feed -->
+    <div class="attention-video-container">
+        <video id="attentionVideo" autoplay style="width: 100%; max-width: 640px; border-radius: 10px;"></video>
+        <div class="attention-overlay">
+            <div class="status-badge">
+                Status: <span id="attentionStatus">READY</span>
+            </div>
+            <div class="confidence-badge">
+                Confidence: <span id="attentionConfidence">0%</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Real-time Statistics -->
+    <div id="attentionStats" class="attention-stats" style="display:none;">
+        <h3>Live Attention Statistics</h3>
+        
+        <div class="stat-row">
+            <div class="stat-label">
+                <i class="fas fa-check-circle" style="color: #27ae60;"></i> Attentive
+            </div>
+            <div class="stat-bar">
+                <div id="attentiveBar" class="progress-bar bg-success"></div>
+            </div>
+            <div class="stat-value" id="attentivePercentage">0%</div>
+        </div>
+        
+        <div class="stat-row">
+            <div class="stat-label">
+                <i class="fas fa-exclamation-triangle" style="color: #f39c12;"></i> Distracted
+            </div>
+            <div class="stat-bar">
+                <div id="distractedBar" class="progress-bar bg-warning"></div>
+            </div>
+            <div class="stat-value" id="distractedPercentage">0%</div>
+        </div>
+        
+        <div class="stat-row">
+            <div class="stat-label">
+                <i class="fas fa-bed" style="color: #e74c3c;"></i> Sleeping
+            </div>
+            <div class="stat-bar">
+                <div id="sleepingBar" class="progress-bar bg-danger"></div>
+            </div>
+            <div class="stat-value" id="sleepingPercentage">0%</div>
+        </div>
+    </div>
+    
+    <!-- History -->
+    <div class="attention-history-section">
+        <h3>Monitoring History</h3>
+        <button class="btn btn-secondary" onclick="loadAttentionHistory()">
+            <i class="fas fa-history"></i> Load History
+        </button>
+        <div id="attentionHistory" class="history-container"></div>
+    </div>
+</div>
+
+<style>
+.attention-monitoring-section {
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+.attention-controls {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    margin-bottom: 20px;
+}
+
+.attention-video-container {
+    position: relative;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.attention-overlay {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.status-badge, .confidence-badge {
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+.status-attentive { color: #27ae60 !important; }
+.status-distracted { color: #f39c12 !important; }
+.status-sleeping { color: #e74c3c !important; }
+
+.attention-stats {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+.stat-row {
+    display: grid;
+    grid-template-columns: 150px 1fr 80px;
+    gap: 15px;
+    align-items: center;
+    margin: 15px 0;
+}
+
+.stat-bar {
+    background: #e0e0e0;
+    height: 25px;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.bg-success { background: #27ae60; }
+.bg-warning { background: #f39c12; }
+.bg-danger { background: #e74c3c; }
+
+.stat-value {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.history-container {
+    margin-top: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.history-item {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+    border-left: 4px solid #3949ab;
+}
+
+.history-date {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.history-stats {
+    display: flex;
+    gap: 15px;
+    margin: 8px 0;
+}
+
+.history-grade {
+    font-weight: bold;
+    color: #1a237e;
+}
+</style>
+
+<script src="/static/js/attention-monitor.js"></script>
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>

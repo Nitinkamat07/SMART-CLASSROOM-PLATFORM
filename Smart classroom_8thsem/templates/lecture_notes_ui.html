@@ -1,0 +1,334 @@
+<!-- Lecture Notes UI Component -->
+
+<!-- For Faculty Dashboard -->
+<div class="lecture-notes-faculty">
+    <h3>📝 Lecture Recording</h3>
+    
+    <div class="recording-controls">
+        <div class="form-group">
+            <label>Lecture Title</label>
+            <input type="text" id="lectureTitle" placeholder="e.g., Introduction to Data Structures">
+        </div>
+        <div class="form-group">
+            <label>Subject</label>
+            <input type="text" id="lectureSubject" placeholder="e.g., Computer Science">
+        </div>
+        <div class="form-group">
+            <label>Class</label>
+            <select id="lectureClass">
+                <option value="1">Class A</option>
+                <option value="2">Class B</option>
+                <option value="3">Class C</option>
+            </select>
+        </div>
+        
+        <button id="startRecordingBtn" class="btn btn-primary" onclick="startLectureRecording()">
+            <i class="fas fa-microphone"></i> Start Recording
+        </button>
+        <button id="stopRecordingBtn" class="btn btn-secondary" style="display:none;" onclick="stopLectureRecording()">
+            <i class="fas fa-stop"></i> Stop Recording
+        </button>
+        
+        <div id="recordingStatus" style="margin-top: 15px; display:none;">
+            <span class="recording-indicator">🔴 Recording...</span>
+            <span id="recordingDuration">00:00</span>
+        </div>
+    </div>
+</div>
+
+<!-- For Student Dashboard -->
+<div class="lecture-notes-student">
+    <h3>📚 Lecture Notes</h3>
+    
+    <div class="search-bar">
+        <input type="text" id="notesSearch" placeholder="Search lectures..." onkeyup="searchLectureNotes()">
+        <select id="subjectFilter" onchange="filterLectureNotes()">
+            <option value="">All Subjects</option>
+            <option value="Computer Science">Computer Science</option>
+            <option value="Mathematics">Mathematics</option>
+            <option value="Physics">Physics</option>
+        </select>
+    </div>
+    
+    <div id="lectureNotesList" class="notes-list"></div>
+</div>
+
+<style>
+.lecture-notes-faculty, .lecture-notes-student {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+.recording-controls {
+    margin: 20px 0;
+}
+
+.recording-indicator {
+    color: #e74c3c;
+    font-weight: bold;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
+}
+
+.search-bar {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.search-bar input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.search-bar select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.notes-list {
+    margin-top: 20px;
+}
+
+.note-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+    border-left: 4px solid #3949ab;
+}
+
+.note-item h4 {
+    color: #1a237e;
+    margin-bottom: 8px;
+}
+
+.note-meta {
+    font-size: 12px;
+    color: #666;
+    margin: 5px 0;
+}
+
+.note-actions {
+    margin-top: 10px;
+}
+
+.note-actions button {
+    margin-right: 10px;
+}
+</style>
+
+<script>
+// Lecture Recording (Faculty)
+let recordingSessionId = null;
+let recordingStartTime = null;
+let recordingInterval = null;
+
+async function startLectureRecording() {
+    const title = document.getElementById('lectureTitle').value;
+    const subject = document.getElementById('lectureSubject').value;
+    const classId = document.getElementById('lectureClass').value;
+    
+    if (!title || !subject) {
+        alert('Please enter lecture title and subject');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/lecture-notes/start-recording', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                faculty_id: currentUser,
+                lecture_title: title,
+                subject: subject,
+                class_id: classId
+            })
+        });
+        
+        const data = await response.json();
+        recordingSessionId = data.session_id;
+        recordingStartTime = Date.now();
+        
+        document.getElementById('startRecordingBtn').style.display = 'none';
+        document.getElementById('stopRecordingBtn').style.display = 'inline-block';
+        document.getElementById('recordingStatus').style.display = 'block';
+        
+        // Update duration
+        recordingInterval = setInterval(updateRecordingDuration, 1000);
+        
+    } catch (error) {
+        alert('Failed to start recording: ' + error.message);
+    }
+}
+
+async function stopLectureRecording() {
+    if (!recordingSessionId) return;
+    
+    clearInterval(recordingInterval);
+    
+    try {
+        const response = await fetch('/api/lecture-notes/stop-recording', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_id: recordingSessionId })
+        });
+        
+        const data = await response.json();
+        
+        document.getElementById('startRecordingBtn').style.display = 'inline-block';
+        document.getElementById('stopRecordingBtn').style.display = 'none';
+        document.getElementById('recordingStatus').style.display = 'none';
+        
+        alert('Recording stopped! Processing lecture notes...');
+        
+        recordingSessionId = null;
+        
+    } catch (error) {
+        alert('Failed to stop recording: ' + error.message);
+    }
+}
+
+function updateRecordingDuration() {
+    if (!recordingStartTime) return;
+    
+    const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    
+    document.getElementById('recordingDuration').textContent = 
+        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+// Lecture Notes (Student)
+async function loadLectureNotes() {
+    try {
+        const response = await fetch('/api/lecture-notes/list?student_id=' + currentUser);
+        const data = await response.json();
+        
+        const listEl = document.getElementById('lectureNotesList');
+        listEl.innerHTML = '';
+        
+        data.lectures.forEach(lecture => {
+            const noteDiv = document.createElement('div');
+            noteDiv.className = 'note-item';
+            noteDiv.innerHTML = `
+                <h4>${lecture.title}</h4>
+                <div class="note-meta">
+                    <span>📚 ${lecture.subject}</span> | 
+                    <span>👨‍🏫 ${lecture.faculty}</span> | 
+                    <span>📅 ${new Date(lecture.date).toLocaleDateString()}</span> | 
+                    <span>⏱️ ${lecture.duration}</span>
+                </div>
+                <div class="note-actions">
+                    <button class="btn btn-primary" onclick="viewLectureNotes(${lecture.id})">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadLectureNotes(${lecture.id})">
+                        <i class="fas fa-download"></i> Download PDF
+                    </button>
+                </div>
+            `;
+            listEl.appendChild(noteDiv);
+        });
+        
+    } catch (error) {
+        console.error('Failed to load lecture notes:', error);
+    }
+}
+
+async function viewLectureNotes(lectureId) {
+    try {
+        const response = await fetch(`/api/lecture-notes/get-lecture-notes/${lectureId}`);
+        const notes = await response.json();
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 800px;">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                <h2>${notes.title}</h2>
+                <p><strong>Subject:</strong> ${notes.subject} | <strong>Faculty:</strong> ${notes.faculty}</p>
+                <p><strong>Date:</strong> ${new Date(notes.date).toLocaleDateString()} | <strong>Duration:</strong> ${notes.duration}</p>
+                
+                <h3>Summary</h3>
+                <p>${notes.summary}</p>
+                
+                <h3>Key Points</h3>
+                <ul>
+                    ${notes.key_points.map(point => `<li>${point}</li>`).join('')}
+                </ul>
+                
+                <h3>Full Transcript</h3>
+                <p style="text-align: justify;">${notes.transcript}</p>
+                
+                <button class="btn btn-primary" onclick="downloadLectureNotes(${lectureId})">
+                    <i class="fas fa-download"></i> Download PDF
+                </button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+    } catch (error) {
+        alert('Failed to load lecture notes: ' + error.message);
+    }
+}
+
+function downloadLectureNotes(lectureId) {
+    window.open(`/api/lecture-notes/download-pdf/${lectureId}?student_id=${currentUser}`, '_blank');
+}
+
+async function searchLectureNotes() {
+    const query = document.getElementById('notesSearch').value;
+    const subject = document.getElementById('subjectFilter').value;
+    
+    try {
+        const response = await fetch(`/api/lecture-notes/search?q=${query}&subject=${subject}`);
+        const data = await response.json();
+        
+        // Update list with search results
+        const listEl = document.getElementById('lectureNotesList');
+        listEl.innerHTML = '';
+        
+        data.results.forEach(lecture => {
+            const noteDiv = document.createElement('div');
+            noteDiv.className = 'note-item';
+            noteDiv.innerHTML = `
+                <h4>${lecture.title}</h4>
+                <div class="note-meta">
+                    <span>📚 ${lecture.subject}</span> | 
+                    <span>👨‍🏫 ${lecture.faculty}</span> | 
+                    <span>📅 ${new Date(lecture.date).toLocaleDateString()}</span>
+                </div>
+                <div class="note-actions">
+                    <button class="btn btn-primary" onclick="viewLectureNotes(${lecture.id})">View</button>
+                    <button class="btn btn-secondary" onclick="downloadLectureNotes(${lecture.id})">Download PDF</button>
+                </div>
+            `;
+            listEl.appendChild(noteDiv);
+        });
+        
+    } catch (error) {
+        console.error('Search failed:', error);
+    }
+}
+
+function filterLectureNotes() {
+    searchLectureNotes();
+}
+
+// Auto-load notes when student dashboard opens
+if (currentRole === 'student') {
+    loadLectureNotes();
+}
+</script>

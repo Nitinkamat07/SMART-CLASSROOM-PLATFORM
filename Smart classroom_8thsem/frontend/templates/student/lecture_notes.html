@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture Notes</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px; margin-bottom: 30px; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .filters { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .filters select { padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-right: 10px; }
+        .lecture-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        .lecture-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        .lecture-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
+        .lecture-title { font-size: 20px; font-weight: bold; color: #333; margin-bottom: 10px; }
+        .lecture-date { color: #666; font-size: 14px; margin-bottom: 15px; }
+        .lecture-summary { color: #555; line-height: 1.6; margin-bottom: 15px; font-size: 14px; }
+        .status-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 15px; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-processing { background: #fff3cd; color: #856404; }
+        .status-recording { background: #cce5ff; color: #004085; }
+        .download-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; width: 100%; transition: opacity 0.3s; }
+        .download-btn:hover { opacity: 0.9; }
+        .download-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #999; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 AI Lecture Notes</h1>
+            <p>Access AI-generated lecture notes and transcripts</p>
+        </div>
+
+        <div class="filters">
+            <select id="statusFilter" onchange="filterLectures()">
+                <option value="">All Status</option>
+                <option value="completed">Completed</option>
+                <option value="processing">Processing</option>
+                <option value="recording">Recording</option>
+            </select>
+        </div>
+
+        <div class="lecture-grid" id="lectureGrid"></div>
+
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <h3>No lecture notes available</h3>
+            <p>Lecture notes will appear here once recordings are processed</p>
+        </div>
+    </div>
+
+    <script>
+        let allLectures = [];
+
+        async function loadLectures() {
+            try {
+                const response = await fetch('/api/lecture/get-lecture-notes');
+                allLectures = await response.json();
+                displayLectures(allLectures);
+            } catch (error) {
+                console.error('Error loading lectures:', error);
+            }
+        }
+
+        function displayLectures(lectures) {
+            const grid = document.getElementById('lectureGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            if (lectures.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            emptyState.style.display = 'none';
+
+            grid.innerHTML = lectures.map(lecture => `
+                <div class="lecture-card">
+                    <div class="lecture-title">${lecture.title}</div>
+                    <div class="lecture-date">📅 ${lecture.date}</div>
+                    <span class="status-badge status-${lecture.status}">${lecture.status.toUpperCase()}</span>
+                    <div class="lecture-summary">${lecture.summary || 'Processing lecture content...'}</div>
+                    <button class="download-btn" 
+                            onclick="downloadLecture(${lecture.id})" 
+                            ${lecture.status !== 'completed' ? 'disabled' : ''}>
+                        ${lecture.status === 'completed' ? '📥 Download PDF' : '⏳ Processing...'}
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function filterLectures() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            let filtered = allLectures;
+            if (statusFilter) {
+                filtered = filtered.filter(l => l.status === statusFilter);
+            }
+            displayLectures(filtered);
+        }
+
+        async function downloadLecture(lectureId) {
+            window.location.href = `/api/lecture/download/${lectureId}`;
+        }
+
+        setInterval(loadLectures, 30000);
+        loadLectures();
+    </script>
+</body>
+</html>

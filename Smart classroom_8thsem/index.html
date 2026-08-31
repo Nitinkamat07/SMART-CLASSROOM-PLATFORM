@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Classroom Management System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
+        
+        .navbar { background: linear-gradient(135deg, #1a237e 0%, #3949ab 50%, #7986cb 100%); color: white; padding: 1rem 0; position: fixed; top: 0; width: 100%; z-index: 1000; box-shadow: 0 4px 20px rgba(26, 35, 126, 0.3); }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+        .nav-logo { font-size: 1.5rem; font-weight: bold; color: #ffd700; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .nav-menu { display: flex; gap: 30px; }
+        .nav-link { color: white; text-decoration: none; transition: color 0.3s; }
+        .nav-link:hover { color: #ffd700; }
+        
+        .main-content { margin-top: 80px; }
+        .hero { background: linear-gradient(135deg, #1a237e 0%, #3949ab 50%, #7986cb 100%); color: white; padding: 100px 0; text-align: center; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%23ffffff" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>'); }
+        .hero h1 { font-size: 3rem; margin-bottom: 20px; color: #ffd700; text-shadow: 3px 3px 6px rgba(0,0,0,0.4); position: relative; z-index: 1; }
+        .hero p { font-size: 1.2rem; margin-bottom: 30px; position: relative; z-index: 1; }
+        .btn { padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-block; margin: 10px; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .btn-primary { background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%); color: #1a237e; font-weight: bold; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4); }
+        .btn-secondary { background: transparent; color: #ffd700; border: 2px solid #ffd700; }
+        .btn-secondary:hover { background: #ffd700; color: #1a237e; }
+        
+        .features { padding: 80px 20px; background: white; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .features h2 { text-align: center; margin-bottom: 50px; font-size: 2.5rem; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; }
+        .feature-card { text-align: center; padding: 30px; border-radius: 10px; box-shadow: 0 8px 25px rgba(26, 35, 126, 0.15); background: linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%); border: 1px solid rgba(26, 35, 126, 0.1); transition: all 0.3s; }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: 0 12px 35px rgba(26, 35, 126, 0.25); }
+        .feature-card i { font-size: 3rem; color: #3949ab; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
+        
+        .dashboard { padding: 80px 20px; background: #f8f9fa; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 30px; }
+        .dashboard-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .dashboard-card h3 { margin-bottom: 15px; color: #2c3e50; }
+        
+        .login-section { padding: 80px 20px; background: white; }
+        .login-container { max-width: 400px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; }
+        
+        .attendance-section { padding: 80px 20px; background: #f8f9fa; }
+        .camera-container { text-align: center; margin: 30px 0; }
+        .video-frame { width: 400px; height: 300px; border: 3px solid #3949ab; border-radius: 10px; background: #000; display: inline-block; position: relative; box-shadow: 0 8px 25px rgba(57, 73, 171, 0.3); }
+        .video-placeholder { color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        
+        .chatbot { position: fixed; bottom: 20px; right: 20px; width: 350px; background: white; border-radius: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.2); z-index: 1000; }
+        .chatbot-header { background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%); color: white; padding: 15px; border-radius: 10px 10px 0 0; }
+        .chatbot-body { height: 300px; padding: 15px; overflow-y: auto; }
+        .message { margin-bottom: 15px; padding: 10px 15px; border-radius: 15px; max-width: 80%; }
+        .bot-message { background: #f1f3f4; }
+        .user-message { background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%); color: white; margin-left: auto; }
+        .chatbot-input { display: flex; padding: 15px; border-top: 1px solid #eee; }
+        .chatbot-input input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; }
+        .chatbot-input button { background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%); color: white; border: none; padding: 10px 15px; border-radius: 50%; margin-left: 10px; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 30px 0; }
+        .stat-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+        .stat-number { font-size: 2rem; font-weight: bold; color: #1a237e; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        
+        .hidden { display: none; }
+        .classroom-status { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 10px; }
+        .available { background: #4CAF50; }
+        .occupied { background: #f44336; }
+        
+        .role-section { padding: 20px; background: white; margin: 20px 0; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .role-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .role-icon { font-size: 2rem; }
+        .admin-icon { color: #e74c3c; }
+        .faculty-icon { color: #3498db; }
+        .student-icon { color: #27ae60; }
+        .action-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .action-btn { padding: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .action-btn:hover { background: #e9ecef; transform: translateY(-2px); }
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 5% auto; padding: 20px; border-radius: 10px; width: 90%; max-width: 500px; }
+        .close { float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .features-grid { grid-template-columns: 1fr; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .chatbot { width: 90%; right: 5%; }
+        }
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-graduation-cap"></i> Smart Classroom
+            </div>
+            <div class="nav-menu">
+                <a href="#home" class="nav-link">Home</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#login" class="nav-link" id="loginNavLink">Login</a>
+                <a href="#dashboard" class="nav-link" id="dashboardNavLink" style="display:none;">Dashboard</a>
+                <span id="userNameDisplay" style="display:none; color:#ffd700; margin-left:20px;"></span>
+                <a href="javascript:void(0)" class="nav-link" id="logoutLink" style="display:none;" onclick="logout()">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Home Section -->
+        <section id="home" class="hero">
+            <div class="container">
+                <h1>AI-Powered Smart Classroom Management</h1>
+                <p>Revolutionizing education with face recognition attendance, real-time monitoring, and intelligent optimization</p>
+                <a href="#login" class="btn btn-primary">Get Started</a>
+                <a href="#features" class="btn btn-secondary">Learn More</a>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features">
+            <div class="container">
+                <h2>Key Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-camera"></i>
+                        <h3>Face Recognition</h3>
+                        <p>Automated attendance with advanced AI face recognition technology</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Real-time Analytics</h3>
+                        <p>Live classroom monitoring and usage optimization</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-robot"></i>
+                        <h3>AI Chatbot</h3>
+                        <p>Intelligent assistant for students and faculty queries</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-cogs"></i>
+                        <h3>Smart Optimization</h3>
+                        <p>AI-powered classroom allocation and scheduling</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Login Section -->
+        <section id="login" class="login-section">
+            <div class="container">
+                <div class="login-container">
+                    <h2 style="text-align: center; margin-bottom: 30px;">Login to Smart Classroom</h2>
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="role">Role</label>
+                            <select id="role" required>
+                                <option value="">Select Role</option>
+                                <option value="admin">Admin</option>
+                                <option value="faculty">Faculty</option>
+                                <option value="student">Student</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="dashboard hidden">
+            <div class="container">
+                <h2 id="dashboardTitle">Dashboard</h2>
+                
+                <!-- Admin Dashboard -->
+                <div id="adminDashboard" class="hidden">
+                    <div class="role-section">
+                        <div class="role-header">
+                            <i class="fas fa-user-shield admin-icon role-icon"></i>
+                            <h3>Admin Control Panel</h3>
+                        </div>
+                        <div class="action-grid">
+                            <div class="action-btn" onclick="openModal('addStudentModal')">
+                                <i class="fas fa-user-plus"></i>
+                                <p>Add Students</p>
+                            </div>
+                            <div class="action-btn" onclick="openModal('addFacultyModal')">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                                <p>Add Faculty</p>
+                            </div>
+                            <div class="action-btn" onclick="openModal('addClassroomModal')">
+                                <i class="fas fa-door-open"></i>
+                                <p>Add Classrooms</p>
+                            </div>
+                            <div class="action-btn" onclick="showSection('attendance')">
+                                <i class="fas fa-clipboard-check"></i>
+                                <p>Mark Attendance</p>
+                            </div>
+                            <div class="action-btn" onclick="openModal('uploadFaceModal')">
+                                <i class="fas fa-camera"></i>
+                                <p>Upload Face Images</p>
+                            </div>
+                            <div class="action-btn" onclick="trainModel()">
+                                <i class="fas fa-brain"></i>
+                                <p>Train AI Model</p>
+                            </div>
+                            <div class="action-btn" onclick="showAIPredictions()">
+                                <i class="fas fa-chart-line"></i>
+                                <p>AI Predictions</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Faculty Dashboard -->
+                <div id="facultyDashboard" class="hidden">
+                    <div class="role-section">
+                        <div class="role-header">
+                            <i class="fas fa-chalkboard-teacher faculty-icon role-icon"></i>
+                            <h3>Faculty Portal</h3>
+                        </div>
+                        <div class="action-grid">
+                            <div class="action-btn" onclick="showSection('attendance')">
+                                <i class="fas fa-clipboard-check"></i>
+                                <p>Mark Attendance</p>
+                            </div>
+                            <div class="action-btn" onclick="openModal('bookClassroomModal')">
+                                <i class="fas fa-chalkboard"></i>
+                                <p>Book Classroom</p>
+                            </div>
+                            <div class="action-btn" onclick="openModal('attentionMonitorModal')">
+                                <i class="fas fa-eye"></i>
+                                <p>Monitor Attention</p>
+                            </div>
+                            <div class="action-btn" onclick="openModal('uploadFaceModal')">
+                                <i class="fas fa-camera"></i>
+                                <p>Upload Face Images</p>
+                            </div>
+                            <div class="action-btn" onclick="viewClassReports()">
+                                <i class="fas fa-chart-bar"></i>
+                                <p>Class Reports</p>
+                            </div>
+                            <div class="action-btn" onclick="viewStudentReports()">
+                                <i class="fas fa-users"></i>
+                                <p>Student Reports</p>
+                            </div>
+                            <div class="action-btn" onclick="checkRoomAvailability()">
+                                <i class="fas fa-door-open"></i>
+                                <p>Room Availability</p>
+                            </div>
+                            <div class="action-btn" onclick="openModal('createQuizModal')" style="border:2px solid #3949ab;">
+                                <i class="fas fa-plus-circle" style="color:#3949ab;"></i>
+                                <p><strong>Create Quiz</strong></p>
+                            </div>
+                            <div class="action-btn" onclick="openModal('quizResultsModal')">
+                                <i class="fas fa-chart-bar" style="color:#27ae60;"></i>
+                                <p>Quiz Results</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student Dashboard -->
+                <div id="studentDashboard" class="hidden">
+                    <div class="role-section">
+                        <div class="role-header">
+                            <i class="fas fa-user-graduate student-icon role-icon"></i>
+                            <h3>Student Portal</h3>
+                        </div>
+                        <div class="action-grid">
+                            <div class="action-btn" onclick="viewMyAttendance()">
+                                <i class="fas fa-percentage"></i>
+                                <p>View Attendance %</p>
+                            </div>
+                            <div class="action-btn" onclick="viewTimetable()">
+                                <i class="fas fa-calendar"></i>
+                                <p>My Timetable</p>
+                            </div>
+                            <div class="action-btn" onclick="openChatbot()">
+                                <i class="fas fa-robot"></i>
+                                <p>Ask Chatbot</p>
+                            </div>
+                            <div class="action-btn" onclick="openModal('attendQuizModal')" style="border:2px solid #27ae60;">
+                                <i class="fas fa-pencil-alt" style="color:#27ae60;"></i>
+                                <p><strong>Attend Quiz</strong></p>
+                            </div>
+                            <div class="action-btn" onclick="openModal('myResultsModal')">
+                                <i class="fas fa-trophy" style="color:#f39c12;"></i>
+                                <p>My Results</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">15</div>
+                        <p>Total Classrooms</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">450</div>
+                        <p>Total Students</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">87%</div>
+                        <p>Today's Attendance</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">92%</div>
+                        <p>Utilization Rate</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>Live Classroom Status</h3>
+                        <div id="classroomStatus">
+                            <p><span class="classroom-status available"></span>A101 - Available (Capacity: 50)</p>
+                            <p><span class="classroom-status occupied"></span>A102 - Occupied (Data Structures)</p>
+                            <p><span class="classroom-status available"></span>B201 - Available (Capacity: 60)</p>
+                            <p><span class="classroom-status occupied"></span>B202 - Occupied (Mathematics)</p>
+                            <p><span class="classroom-status available"></span>C301 - Available (Capacity: 80)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card">
+                        <h3>AI Insights</h3>
+                        <div id="aiInsights">
+                            <p><i class="fas fa-lightbulb" style="color: #f39c12;"></i> Room C301 is underutilized (avg 23%)</p>
+                            <p><i class="fas fa-clock" style="color: #e74c3c;"></i> Peak usage: 10:00-12:00 AM</p>
+                            <p><i class="fas fa-chart-line" style="color: #27ae60;"></i> Attendance improved by 15%</p>
+                            <p><i class="fas fa-users" style="color: #3498db;"></i> Optimal class size: 35-40 students</p>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card">
+                        <h3>Recent Activity</h3>
+                        <div id="recentActivity">
+                            <p><i class="fas fa-check-circle" style="color: #27ae60;"></i> John Doe marked attendance (2 min ago)</p>
+                            <p><i class="fas fa-door-open" style="color: #3498db;"></i> Room A102 status changed (5 min ago)</p>
+                            <p><i class="fas fa-user-plus" style="color: #f39c12;"></i> New student registered (10 min ago)</p>
+                            <p><i class="fas fa-brain" style="color: #9b59b6;"></i> AI model updated (15 min ago)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Attendance Section -->
+        <section id="attendance" class="attendance-section hidden">
+            <div class="container">
+                <h2 style="text-align: center; margin-bottom: 30px;">Face Recognition Attendance</h2>
+                <div class="camera-container">
+                    <div class="video-frame">
+                        <div class="video-placeholder">
+                            <i class="fas fa-camera" style="font-size: 3rem; margin-bottom: 10px;"></i>
+                            <p>Click "Start Camera" to begin</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button id="startCamera" class="btn btn-primary">
+                            <i class="fas fa-camera"></i> Start Camera
+                        </button>
+                        <button id="capturePhoto" class="btn btn-primary hidden">
+                            <i class="fas fa-camera-retro"></i> Mark Attendance
+                        </button>
+                        <button id="stopCamera" class="btn btn-secondary hidden">
+                            <i class="fas fa-stop"></i> Stop Camera
+                        </button>
+                    </div>
+                    <div id="attendanceStatus" style="margin-top: 20px; padding: 15px; background: #e8f5e8; border-radius: 5px; color: #2d5a2d;">
+                        Ready to mark attendance
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Chatbot Widget -->
+    <div class="chatbot">
+        <div class="chatbot-header">
+            <i class="fas fa-robot"></i> Smart Assistant
+            <button id="chatToggle" style="float: right; background: none; border: none; color: white;">
+                <i class="fas fa-minus"></i>
+            </button>
+        </div>
+        <div class="chatbot-body" id="chatMessages">
+            <div class="message bot-message">
+                <p>Hello! I'm your smart classroom assistant. How can I help you today?</p>
+            </div>
+        </div>
+        <div class="chatbot-input">
+            <input type="text" id="chatInput" placeholder="Type your message...">
+            <button id="chatSend"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentUser = null;
+        let currentRole = null;
+        let bookedClassrooms = []; // Store booked classrooms with timestamps
+        
+        // Student names database
+        const studentNames = {
+            '20221CSE0308': 'MANOJ P',
+            '20221CSE0680': 'Jyothi Prasad',
+            '20221CSE0530': 'Jnan Sowrab'
+        };
+        
+        function getUserName(username, role) {
+            if (role === 'admin') return 'Administrator';
+            if (role === 'faculty') return 'Faculty Member';
+            if (studentNames[username]) return studentNames[username];
+            return username;
+        }
+        
+        function updateNavbar() {
+            if (currentUser) {
+                document.getElementById('loginNavLink').style.display = 'none';
+                document.getElementById('dashboardNavLink').style.display = 'inline';
+                document.getElementById('userNameDisplay').style.display = 'inline';
+                document.getElementById('userNameDisplay').textContent = '👤 ' + getUserName(currentUser, currentRole);
+                document.getElementById('logoutLink').style.display = 'inline';
+            } else {
+                document.getElementById('loginNavLink').style.display = 'inline';
+                document.getElementById('dashboardNavLink').style.display = 'none';
+                document.getElementById('userNameDisplay').style.display = 'none';
+                document.getElementById('logoutLink').style.display = 'none';
+            }
+        }
+        
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                currentUser = null;
+                currentRole = null;
+                updateNavbar();
+                showSection('home');
+                alert('Logged out successfully!');
+            }
+        }
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const href = e.target.getAttribute('href');
+                if (href && href.startsWith('#') && href !== '#') {
+                    const target = href.substring(1);
+                    showSection(target);
+                }
+            });
+        });
+
+        // Show/Hide sections
+        function showSection(sectionName) {
+            document.querySelectorAll('section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            const targetSection = document.getElementById(sectionName);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
+        }
+
+        // Login functionality
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+
+            // Authentication
+            if (username === 'admin' && password === 'admin123' && role === 'admin') {
+                currentUser = username;
+                currentRole = role;
+                updateNavbar();
+                alert('Login successful!');
+                showSection('dashboard');
+                showRoleDashboard(role);
+            } else if (username === 'faculty' && password === 'faculty123' && role === 'faculty') {
+                currentUser = username;
+                currentRole = role;
+                updateNavbar();
+                alert('Login successful!');
+                showSection('dashboard');
+                showRoleDashboard(role);
+            } else if (studentNames[username] && username === password && role === 'student') {
+                currentUser = username;
+                currentRole = 'student';
+                updateNavbar();
+                alert('Login successful! Welcome ' + getUserName(username, 'student'));
+                showSection('dashboard');
+                showRoleDashboard('student');
+            } else {
+                alert('Invalid credentials!');
+            }
+        });
+
+        // Show role-specific dashboard
+        function showRoleDashboard(role) {
+            document.getElementById('dashboardTitle').textContent = `${role.charAt(0).toUpperCase() + role.slice(1)} Dashboard`;
+            document.querySelectorAll('[id$="Dashboard"]').forEach(dash => dash.classList.add('hidden'));
+            document.getElementById(role + 'Dashboard').classList.remove('hidden');
+        }
+
+        // Admin functions
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+            // Reset face upload modal when opened
+            if (modalId === 'uploadFaceModal') {
+                document.getElementById('capturedImages').innerHTML = '';
+                document.getElementById('faceVideo').style.display = 'none';
+                document.getElementById('startFaceCamera').style.display = 'block';
+                document.getElementById('captureFacePhoto').style.display = 'none';
+                document.getElementById('stopFaceCamera').style.display = 'none';
+                if (faceVideoStream) {
+                    faceVideoStream.getTracks().forEach(track => track.stop());
+                    faceVideoStream = null;
+                }
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            // Stop any video streams when closing modals
+            if (modalId === 'uploadFaceModal' && faceVideoStream) {
+                faceVideoStream.getTracks().forEach(track => track.stop());
+                faceVideoStream = null;
+            }
+        }
+
+        function trainModel() {
+            alert('AI Model training started! This will take a few minutes.');
+            updateRecentActivity('Face recognition model training initiated');
+        }
+
+        function showAIPredictions() {
+            alert('AI Predictions:\n• Room C301 will be 23% utilized tomorrow\n• Peak hours: 10:00-12:00 AM\n• Recommend moving CS101 to larger room');
+        }
+
+        // Faculty functions
+        function viewClassReports() {
+            alert('Class Reports:\n• CS101: 87% avg attendance\n• MATH201: 92% avg attendance\n• PHY301: 78% avg attendance');
+        }
+
+        function viewStudentReports() {
+            const reportHTML = `
+                <div style="font-family: Arial; padding: 20px;">
+                    <h2 style="color: #1a237e; text-align: center; margin-bottom: 30px;">📊 Student Reports</h2>
+                    
+                    <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                        <h3 style="color: #3949ab; border-bottom: 2px solid #ffd700; padding-bottom: 10px;">👨‍🎓 MANOJ P</h3>
+                        <p><strong>Roll No:</strong> 20221CSE0308</p>
+                        <p><strong>Department:</strong> CSE</p>
+                        <p><strong>Email:</strong> manoj@gmail.com</p>
+                        <p><strong>Phone:</strong> 9353300449</p>
+                        <p><strong>City:</strong> Bangalore</p>
+                        <p><strong>Attendance:</strong> <span style="color: #27ae60; font-weight: bold;">92%</span></p>
+                        <p><strong>Performance:</strong> <span style="color: #27ae60;">Excellent</span></p>
+                    </div>
+                    
+                    <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                        <h3 style="color: #3949ab; border-bottom: 2px solid #ffd700; padding-bottom: 10px;">👨‍🎓 Jyothi Prasad</h3>
+                        <p><strong>Roll No:</strong> 20221CSE0680</p>
+                        <p><strong>Department:</strong> CSE AI</p>
+                        <p><strong>Email:</strong> jyothi@gmail.com</p>
+                        <p><strong>Phone:</strong> 9353635315</p>
+                        <p><strong>City:</strong> Tumkur</p>
+                        <p><strong>Attendance:</strong> <span style="color: #f39c12; font-weight: bold;">85%</span></p>
+                        <p><strong>Performance:</strong> <span style="color: #27ae60;">Good</span></p>
+                    </div>
+                    
+                    <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <h3 style="color: #3949ab; border-bottom: 2px solid #ffd700; padding-bottom: 10px;">👨‍🎓 Jnan Sowrab</h3>
+                        <p><strong>Roll No:</strong> 20221CSE0530</p>
+                        <p><strong>Department:</strong> CSE ML</p>
+                        <p><strong>Email:</strong> jnan@gmail.com</p>
+                        <p><strong>Phone:</strong> 9986748526</p>
+                        <p><strong>City:</strong> Shivamogga</p>
+                        <p><strong>Attendance:</strong> <span style="color: #27ae60; font-weight: bold;">88%</span></p>
+                        <p><strong>Performance:</strong> <span style="color: #27ae60;">Very Good</span></p>
+                    </div>
+                </div>
+            `;
+            
+            const newWindow = window.open('', 'Student Reports', 'width=800,height=600');
+            newWindow.document.write(reportHTML);
+            newWindow.document.close();
+        }
+
+        function checkRoomAvailability() {
+            let availabilityHTML = '<div style="padding: 20px;"><h3>Room Availability</h3>';
+            
+            const rooms = [
+                {name: 'A101', capacity: 50},
+                {name: 'A102', capacity: 40},
+                {name: 'B201', capacity: 60},
+                {name: 'B202', capacity: 35},
+                {name: 'C301', capacity: 80}
+            ];
+            
+            const now = Date.now();
+            rooms.forEach(room => {
+                const booking = bookedClassrooms.find(b => b.room === room.name && b.endTime > now);
+                if (booking) {
+                    const remainingMin = Math.ceil((booking.endTime - now) / 60000);
+                    availabilityHTML += `<p>🔴 ${room.name} - Occupied by ${booking.faculty} (${booking.subject}) - ${remainingMin} min remaining</p>`;
+                } else {
+                    availabilityHTML += `<p>🟢 ${room.name} - Available (Capacity: ${room.capacity})</p>`;
+                }
+            });
+            
+            availabilityHTML += '</div>';
+            const newWindow = window.open('', 'Room Availability', 'width=600,height=400');
+            newWindow.document.write(availabilityHTML);
+            newWindow.document.close();
+        }
+
+        // Student functions
+        function viewMyAttendance() {
+            openModal('attendanceModal');
+        }
+
+        function viewTimetable() {
+            openModal('timetableModal');
+        }
+
+        function openChatbot() {
+            document.querySelector('.chatbot-body').style.display = 'block';
+            document.querySelector('.chatbot-input').style.display = 'flex';
+            document.querySelector('#chatToggle i').className = 'fas fa-minus';
+        }
+
+        // Camera functionality
+        let videoStream = null;
+        
+        document.getElementById('startCamera').addEventListener('click', async () => {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const videoElement = document.createElement('video');
+                videoElement.srcObject = videoStream;
+                videoElement.autoplay = true;
+                videoElement.style.width = '100%';
+                videoElement.style.height = '100%';
+                videoElement.style.objectFit = 'cover';
+                
+                const placeholder = document.querySelector('.video-placeholder');
+                placeholder.innerHTML = '';
+                placeholder.appendChild(videoElement);
+                
+                document.getElementById('startCamera').classList.add('hidden');
+                document.getElementById('capturePhoto').classList.remove('hidden');
+                document.getElementById('stopCamera').classList.remove('hidden');
+                updateAttendanceStatus('Camera started. Position face in the frame.', 'info');
+            } catch (error) {
+                updateAttendanceStatus('Camera access denied. Please allow camera permission.', 'error');
+            }
+        });
+
+        document.getElementById('capturePhoto').addEventListener('click', () => {
+            updateAttendanceStatus('Processing face recognition...', 'info');
+            setTimeout(() => {
+                updateAttendanceStatus('Attendance marked successfully! Welcome, John Doe.', 'success');
+                updateRecentActivity('John Doe marked attendance via face recognition');
+            }, 2000);
+        });
+
+        document.getElementById('stopCamera').addEventListener('click', () => {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            document.querySelector('.video-placeholder').innerHTML = '<i class="fas fa-camera" style="font-size: 3rem;"></i><p>Click "Start Camera" to begin</p>';
+            document.getElementById('startCamera').classList.remove('hidden');
+            document.getElementById('capturePhoto').classList.add('hidden');
+            document.getElementById('stopCamera').classList.add('hidden');
+            updateAttendanceStatus('Camera stopped.', 'info');
+        });
+
+        function updateAttendanceStatus(message, type) {
+            const statusEl = document.getElementById('attendanceStatus');
+            statusEl.textContent = message;
+            statusEl.className = type === 'success' ? 'success-status' : type === 'error' ? 'error-status' : 'info-status';
+        }
+
+        // Chatbot functionality
+        document.getElementById('chatSend').addEventListener('click', sendMessage);
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addChatMessage(message, 'user');
+            input.value = '';
+
+            setTimeout(async () => {
+                const response = await getChatbotResponse(message);
+                addChatMessage(response, 'bot');
+            }, 1000);
+        }
+
+        function addChatMessage(message, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.innerHTML = `<p>${message}</p>`;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function getChatbotResponse(message) {
+            const msg = message.toLowerCase();
+            
+            // Use Gemini API for real-life questions
+            return callGeminiAPI(msg);
+        }
+        
+        async function callGeminiAPI(userMessage) {
+            const GEMINI_API_KEY = 'AIzaSyDxZvqLqH_8Yz9xKjPmNrStUvWxYzAbCdE';
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+            
+            const systemContext = `You are a helpful AI assistant for a Smart Classroom Management System. Answer any questions the user asks - both about the classroom system and general real-life questions. Be helpful, friendly, and informative.
+            
+Classroom System Info:
+- 15 classrooms (A101-50 capacity, A102-40, B201-60, B202-35, C301-80)
+- 450 students, 87% attendance rate
+- Available: A101, B201, C301 | Occupied: A102 (Data Structures), B202 (Math)
+- Faculty: Dr. John Smith (CS), Prof. Sarah Johnson (Math)
+- Schedule: Data Structures 9AM-A101, Math 11AM-B202, Physics 2PM-C301`;
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `${systemContext}\n\nUser: ${userMessage}\n\nAssistant:` }] }],
+                        generationConfig: { temperature: 0.7, maxOutputTokens: 300 }
+                    })
+                });
+                
+                if (!response.ok) throw new Error('API Error');
+                
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                console.error('Gemini API Error:', error);
+                return 'I can help you with classroom queries, schedules, attendance, and general questions. What would you like to know?';
+            }
+        }
+
+        // Chat toggle
+        document.getElementById('chatToggle').addEventListener('click', () => {
+            const chatBody = document.querySelector('.chatbot-body');
+            const chatInput = document.querySelector('.chatbot-input');
+            const toggleIcon = document.querySelector('#chatToggle i');
+            
+            if (chatBody.style.display === 'none') {
+                chatBody.style.display = 'block';
+                chatInput.style.display = 'flex';
+                toggleIcon.className = 'fas fa-minus';
+            } else {
+                chatBody.style.display = 'none';
+                chatInput.style.display = 'none';
+                toggleIcon.className = 'fas fa-plus';
+            }
+        });
+
+        // Real-time updates simulation
+        function updateRecentActivity(activity) {
+            const activityEl = document.getElementById('recentActivity');
+            const newActivity = document.createElement('p');
+            newActivity.innerHTML = `<i class="fas fa-check-circle" style="color: #27ae60;"></i> ${activity} (just now)`;
+            activityEl.insertBefore(newActivity, activityEl.firstChild);
+        }
+
+        // Simulate real-time classroom updates
+        setInterval(() => {
+            const classrooms = ['A101', 'A102', 'B201', 'B202', 'C301'];
+            const randomRoom = classrooms[Math.floor(Math.random() * classrooms.length)];
+            const status = Math.random() > 0.5 ? 'available' : 'occupied';
+            updateRecentActivity(`Room ${randomRoom} status updated to ${status}`);
+        }, 30000);
+
+        // Initialize
+        showSection('home');
+
+        // Form submissions
+        document.getElementById('bookClassroomForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const room = document.getElementById('classroomSelect').value;
+            const subject = document.getElementById('subjectInput').value;
+            const duration = parseInt(document.getElementById('durationSelect').value);
+            
+            const now = Date.now();
+            const endTime = now + (duration * 60000);
+            
+            // Check if room is already booked
+            const existingBooking = bookedClassrooms.find(b => b.room === room && b.endTime > now);
+            if (existingBooking) {
+                alert(`Room ${room} is already booked by ${existingBooking.faculty} until ${new Date(existingBooking.endTime).toLocaleTimeString()}`);
+                return;
+            }
+            
+            // Book the classroom
+            bookedClassrooms.push({
+                room: room,
+                subject: subject,
+                faculty: getUserName(currentUser, currentRole),
+                startTime: now,
+                endTime: endTime,
+                duration: duration
+            });
+            
+            alert(`Classroom ${room} booked successfully for ${subject}!\nDuration: ${duration} minutes\nEnds at: ${new Date(endTime).toLocaleTimeString()}`);
+            closeModal('bookClassroomModal');
+            updateRecentActivity(`${room} booked for ${subject} by ${getUserName(currentUser, currentRole)}`);
+            
+            // Auto-release after duration
+            setTimeout(() => {
+                bookedClassrooms = bookedClassrooms.filter(b => b.endTime > Date.now());
+                updateRecentActivity(`${room} is now available`);
+            }, duration * 60000);
+        });
+
+        document.getElementById('addStudentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('newStudentName').value;
+            alert(`Student ${name} added successfully!`);
+            closeModal('addStudentModal');
+            updateRecentActivity(`New student ${name} registered`);
+        });
+
+        document.getElementById('uploadFaceForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const student = document.getElementById('faceStudentSelect').value;
+            const capturedCount = document.querySelectorAll('#capturedImages img').length;
+            if (capturedCount < 5) {
+                alert('Please capture at least 5 photos for training.');
+                return;
+            }
+            alert(`Face images uploaded for ${studentNames[student] || student}. Training model...`);
+            closeModal('uploadFaceModal');
+            updateRecentActivity(`Face images uploaded for student ${studentNames[student] || student}`);
+            // Reset
+            document.getElementById('capturedImages').innerHTML = '';
+            if (faceVideoStream) {
+                faceVideoStream.getTracks().forEach(track => track.stop());
+                faceVideoStream = null;
+            }
+            document.getElementById('faceVideo').style.display = 'none';
+            document.getElementById('startFaceCamera').style.display = 'block';
+            document.getElementById('captureFacePhoto').style.display = 'none';
+            document.getElementById('stopFaceCamera').style.display = 'none';
+        });
+
+        // Face upload camera functionality
+        let faceVideoStream = null;
+        
+        document.getElementById('startFaceCamera').addEventListener('click', async () => {
+            try {
+                faceVideoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.getElementById('faceVideo');
+                video.srcObject = faceVideoStream;
+                video.style.display = 'block';
+                document.getElementById('startFaceCamera').style.display = 'none';
+                document.getElementById('captureFacePhoto').style.display = 'block';
+                document.getElementById('stopFaceCamera').style.display = 'block';
+            } catch (error) {
+                alert('Camera access denied. Please allow camera permission.');
+            }
+        });
+
+        document.getElementById('captureFacePhoto').addEventListener('click', () => {
+            const video = document.getElementById('faceVideo');
+            const canvas = document.getElementById('faceCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, 300, 225);
+            
+            const imgData = canvas.toDataURL('image/png');
+            const img = document.createElement('img');
+            img.src = imgData;
+            img.style.width = '80px';
+            img.style.height = '60px';
+            img.style.border = '2px solid #3949ab';
+            img.style.borderRadius = '5px';
+            document.getElementById('capturedImages').appendChild(img);
+            
+            const count = document.querySelectorAll('#capturedImages img').length;
+            if (count >= 5) {
+                alert(`${count} photos captured! You can now submit to train the model.`);
+            }
+        });
+
+        document.getElementById('stopFaceCamera').addEventListener('click', () => {
+            if (faceVideoStream) {
+                faceVideoStream.getTracks().forEach(track => track.stop());
+                faceVideoStream = null;
+            }
+            document.getElementById('faceVideo').style.display = 'none';
+            document.getElementById('startFaceCamera').style.display = 'block';
+            document.getElementById('captureFacePhoto').style.display = 'none';
+            document.getElementById('stopFaceCamera').style.display = 'none';
+        });
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                const modalId = event.target.id;
+                closeModal(modalId);
+            }
+        }
+    </script>
+
+    <!-- Modals -->
+    <div id="bookClassroomModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('bookClassroomModal')">&times;</span>
+            <h3>Book Classroom for Lecture</h3>
+            <form id="bookClassroomForm">
+                <div class="form-group">
+                    <label>Select Classroom</label>
+                    <select id="classroomSelect" required>
+                        <option value="">Choose Classroom</option>
+                        <option value="A101">A101 (Capacity: 50)</option>
+                        <option value="A102">A102 (Capacity: 40)</option>
+                        <option value="B201">B201 (Capacity: 60)</option>
+                        <option value="B202">B202 (Capacity: 35)</option>
+                        <option value="C301">C301 (Capacity: 80)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Subject</label>
+                    <input type="text" id="subjectInput" placeholder="e.g., Data Structures" required>
+                </div>
+                <div class="form-group">
+                    <label>Duration</label>
+                    <select id="durationSelect" required>
+                        <option value="60">1 Hour</option>
+                        <option value="90">1.5 Hours</option>
+                        <option value="120">2 Hours</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Book Classroom</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="addStudentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addStudentModal')">&times;</span>
+            <h3>Add New Student</h3>
+            <form id="addStudentForm">
+                <div class="form-group">
+                    <label>Student ID</label>
+                    <input type="text" id="newStudentId" required>
+                </div>
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="newStudentName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="newStudentEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Department</label>
+                    <input type="text" id="newStudentDept" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Student</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="uploadFaceModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('uploadFaceModal')">&times;</span>
+            <h3>Upload Face Images</h3>
+            <form id="uploadFaceForm">
+                <div class="form-group">
+                    <label>Select Student</label>
+                    <select id="faceStudentSelect" required>
+                        <option value="">Choose Student</option>
+                        <option value="20221CSE0308">MANOJ P (20221CSE0308)</option>
+                        <option value="20221CSE0680">Jyothi Prasad (20221CSE0680)</option>
+                        <option value="20221CSE0530">Jnan Sowrab (20221CSE0530)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Capture Photo</label>
+                    <div style="text-align: center; margin: 15px 0;">
+                        <video id="faceVideo" width="300" height="225" autoplay style="border: 2px solid #3949ab; border-radius: 8px; display: none;"></video>
+                        <canvas id="faceCanvas" width="300" height="225" style="display: none;"></canvas>
+                        <div id="capturedImages" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 10px;"></div>
+                    </div>
+                    <button type="button" id="startFaceCamera" class="btn btn-primary" style="width: 100%; margin-bottom: 10px;">Start Camera</button>
+                    <button type="button" id="captureFacePhoto" class="btn btn-primary" style="width: 100%; display: none;">Capture Photo (5 needed)</button>
+                    <button type="button" id="stopFaceCamera" class="btn btn-secondary" style="width: 100%; display: none;">Stop Camera</button>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload & Train</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="attendanceModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('attendanceModal')">&times;</span>
+            <h3>My Attendance Record</h3>
+            <div style="text-align: center; margin: 20px 0;">
+                <div class="stat-number" style="font-size: 3rem; color: #27ae60;">87%</div>
+                <p>Overall Attendance Rate</p>
+            </div>
+            <div>
+                <p><strong>Total Classes:</strong> 30</p>
+                <p><strong>Attended:</strong> 26</p>
+                <p><strong>Missed:</strong> 4</p>
+                <p><strong>This Month:</strong> 92%</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="timetableModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('timetableModal')">&times;</span>
+            <h3>My Timetable</h3>
+            <div style="margin: 20px 0;">
+                <h4>Today's Classes:</h4>
+                <p>📚 Data Structures - 9:00 AM (Room A101)</p>
+                <p>🧮 Mathematics - 11:00 AM (Room B202)</p>
+                <p>⚛️ Physics - 2:00 PM (Room C301)</p>
+                <br>
+                <h4>Tomorrow's Classes:</h4>
+                <p>💻 Algorithms - 10:00 AM (Room A102)</p>
+                <p>🔬 Chemistry - 1:00 PM (Room B201)</p>
+            </div>
+        </div>
+    </div>
+    <!-- ── CREATE QUIZ MODAL (Faculty) ─────────────────────────── -->
+    <div id="createQuizModal" class="modal">
+        <div class="modal-content" style="max-width:750px;max-height:90vh;overflow-y:auto;">
+            <span class="close" onclick="closeModal('createQuizModal')">&times;</span>
+            <h3 style="color:#1a237e;margin-bottom:20px;">📝 Create Quiz</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                <div class="form-group">
+                    <label>Quiz Title *</label>
+                    <input type="text" id="qzTitle" placeholder="e.g. Chapter 3 Quiz" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;">
+                </div>
+                <div class="form-group">
+                    <label>Subject *</label>
+                    <input type="text" id="qzSubject" placeholder="e.g. Data Structures" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;">
+                </div>
+                <div class="form-group">
+                    <label>Chapter *</label>
+                    <input type="text" id="qzChapter" placeholder="e.g. Chapter 3" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;">
+                </div>
+                <div class="form-group">
+                    <label>Time Limit (minutes) *</label>
+                    <input type="number" id="qzTime" value="30" min="1" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;">
+                </div>
+                <div class="form-group" style="grid-column:span 2;">
+                    <label>Deadline *</label>
+                    <input type="datetime-local" id="qzDeadline" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;">
+                </div>
+            </div>
+            <hr style="margin:15px 0;">
+            <h4 style="margin-bottom:12px;color:#2c3e50;">Questions</h4>
+            <div id="qzQuestionsContainer"></div>
+            <button onclick="qzAddQuestion()" style="background:#3949ab;color:#fff;border:none;padding:10px 18px;border-radius:5px;cursor:pointer;margin-top:8px;">
+                <i class="fas fa-plus"></i> Add Question
+            </button>
+            <div style="text-align:right;margin-top:20px;">
+                <button onclick="closeModal('createQuizModal')" style="background:#ccc;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;margin-right:10px;">Cancel</button>
+                <button onclick="qzSaveQuiz()" style="background:linear-gradient(135deg,#1a237e,#3949ab);color:#fff;border:none;padding:10px 24px;border-radius:5px;cursor:pointer;font-weight:bold;">
+                    <i class="fas fa-save"></i> Save Quiz
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── QUIZ RESULTS MODAL (Faculty) ────────────────────────── -->
+    <div id="quizResultsModal" class="modal">
+        <div class="modal-content" style="max-width:750px;max-height:90vh;overflow-y:auto;">
+            <span class="close" onclick="closeModal('quizResultsModal')">&times;</span>
+            <h3 style="color:#1a237e;margin-bottom:20px;">📊 Quiz Results</h3>
+            <div class="form-group">
+                <label>Select Quiz</label>
+                <select id="resultsQuizSelect" onchange="qzLoadResults(this.value)" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;">
+                    <option value="">-- Choose a quiz --</option>
+                </select>
+            </div>
+            <div id="resultsContent" style="display:none;margin-top:15px;">
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+                    <div style="background:#e8eaf6;border-radius:8px;padding:15px;text-align:center;">
+                        <div id="resAvg" style="font-size:1.8rem;font-weight:700;color:#3949ab;">0%</div>
+                        <div style="font-size:12px;color:#666;">Average</div>
+                    </div>
+                    <div style="background:#e8f5e9;border-radius:8px;padding:15px;text-align:center;">
+                        <div id="resHigh" style="font-size:1.8rem;font-weight:700;color:#2e7d32;">0</div>
+                        <div style="font-size:12px;color:#666;">Highest</div>
+                    </div>
+                    <div style="background:#fce4ec;border-radius:8px;padding:15px;text-align:center;">
+                        <div id="resLow" style="font-size:1.8rem;font-weight:700;color:#c62828;">0</div>
+                        <div style="font-size:12px;color:#666;">Lowest</div>
+                    </div>
+                    <div style="background:#fff3e0;border-radius:8px;padding:15px;text-align:center;">
+                        <div id="resTotal" style="font-size:1.8rem;font-weight:700;color:#e65100;">0</div>
+                        <div style="font-size:12px;color:#666;">Attempts</div>
+                    </div>
+                </div>
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#f8f9fa;">
+                            <th style="padding:10px;text-align:left;border-bottom:2px solid #ddd;">#</th>
+                            <th style="padding:10px;text-align:left;border-bottom:2px solid #ddd;">Student</th>
+                            <th style="padding:10px;text-align:left;border-bottom:2px solid #ddd;">Score</th>
+                            <th style="padding:10px;text-align:left;border-bottom:2px solid #ddd;">%</th>
+                            <th style="padding:10px;text-align:left;border-bottom:2px solid #ddd;">Status</th>
+                            <th style="padding:10px;text-align:left;border-bottom:2px solid #ddd;">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── ATTEND QUIZ MODAL (Student) ─────────────────────────── -->
+    <div id="attendQuizModal" class="modal">
+        <div class="modal-content" style="max-width:700px;max-height:90vh;overflow-y:auto;">
+            <span class="close" onclick="qzCloseAttend()">&times;</span>
+            <!-- Quiz list view -->
+            <div id="quizListView">
+                <h3 style="color:#1a237e;margin-bottom:15px;">📚 Available Quizzes</h3>
+                <div id="availableQuizzesList"></div>
+            </div>
+            <!-- Quiz attempt view -->
+            <div id="quizAttemptView" style="display:none;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+                    <h3 id="attemptQuizTitle" style="color:#1a237e;"></h3>
+                    <div id="quizTimerBox" style="background:#1a237e;color:#fff;padding:8px 16px;border-radius:20px;font-weight:700;font-size:1.1rem;">
+                        ⏱ <span id="quizTimerDisplay">00:00</span>
+                    </div>
+                </div>
+                <div id="mcqContainer"></div>
+                <div style="text-align:right;margin-top:20px;">
+                    <button onclick="qzCancelAttempt()" style="background:#ccc;border:none;padding:10px 18px;border-radius:5px;cursor:pointer;margin-right:10px;">Cancel</button>
+                    <button onclick="qzSubmitAttempt()" style="background:linear-gradient(135deg,#1a237e,#3949ab);color:#fff;border:none;padding:10px 24px;border-radius:5px;cursor:pointer;font-weight:bold;">
+                        <i class="fas fa-paper-plane"></i> Submit Quiz
+                    </button>
+                </div>
+            </div>
+            <!-- Score view -->
+            <div id="quizScoreView" style="display:none;text-align:center;padding:30px;">
+                <div style="font-size:3rem;">🎯</div>
+                <div id="scoreDisplay" style="font-size:3.5rem;font-weight:700;color:#1a237e;margin:10px 0;"></div>
+                <div id="scorePercent" style="font-size:1.2rem;color:#666;"></div>
+                <div id="scoreMsg" style="margin-top:12px;font-size:1rem;"></div>
+                <button onclick="qzBackToList()" style="margin-top:20px;background:#3949ab;color:#fff;border:none;padding:10px 24px;border-radius:5px;cursor:pointer;">
+                    ← Back to Quizzes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── MY RESULTS MODAL (Student) ──────────────────────────── -->
+    <div id="myResultsModal" class="modal">
+        <div class="modal-content" style="max-width:600px;max-height:90vh;overflow-y:auto;">
+            <span class="close" onclick="closeModal('myResultsModal')">&times;</span>
+            <h3 style="color:#1a237e;margin-bottom:20px;">🏆 My Quiz Results</h3>
+            <div id="myResultsList"></div>
+        </div>
+    </div>
+
+</body>
+</html>
+
+    <div id="attentionMonitorModal" class="modal">
+        <div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto;">
+            <span class="close" onclick="closeModal('attentionMonitorModal')">&times;</span>
+            <h3>📊 Student Attention Monitoring</h3>
+            
+            <div class="attention-controls" style="margin: 20px 0;">
+                <select id="classSelect" style="padding: 10px; margin-right: 10px;">
+                    <option value="1">Class A - Data Structures</option>
+                    <option value="2">Class B - Algorithms</option>
+                    <option value="3">Class C - Machine Learning</option>
+                </select>
+                <button id="startAttentionBtn" class="btn btn-primary" onclick="startAttentionMonitoring()">
+                    <i class="fas fa-play"></i> Start Monitoring
+                </button>
+                <button id="stopAttentionBtn" class="btn btn-secondary" style="display:none;" onclick="stopAttentionMonitoring()">
+                    <i class="fas fa-stop"></i> Stop Monitoring
+                </button>
+            </div>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <video id="attentionVideo" autoplay style="width: 100%; max-width: 640px; border: 3px solid #3949ab; border-radius: 10px;"></video>
+                <div style="margin-top: 10px;">
+                    <span style="background: #1a237e; color: white; padding: 8px 15px; border-radius: 20px; margin: 5px;">
+                        Status: <span id="attentionStatus">READY</span>
+                    </span>
+                    <span style="background: #3949ab; color: white; padding: 8px 15px; border-radius: 20px; margin: 5px;">
+                        Confidence: <span id="attentionConfidence">0%</span>
+                    </span>
+                </div>
+            </div>
+            
+            <div id="attentionStats" style="display:none; background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h4>Live Attention Statistics</h4>
+                <div style="margin: 15px 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
+                        <span><i class="fas fa-check-circle" style="color: #27ae60;"></i> Attentive</span>
+                        <div style="flex: 1; background: #e0e0e0; height: 25px; border-radius: 15px; margin: 0 15px; overflow: hidden;">
+                            <div id="attentiveBar" style="background: #27ae60; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                        </div>
+                        <span id="attentivePercentage" style="font-weight: bold;">0%</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
+                        <span><i class="fas fa-exclamation-triangle" style="color: #f39c12;"></i> Distracted</span>
+                        <div style="flex: 1; background: #e0e0e0; height: 25px; border-radius: 15px; margin: 0 15px; overflow: hidden;">
+                            <div id="distractedBar" style="background: #f39c12; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                        </div>
+                        <span id="distractedPercentage" style="font-weight: bold;">0%</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
+                        <span><i class="fas fa-bed" style="color: #e74c3c;"></i> Sleeping</span>
+                        <div style="flex: 1; background: #e0e0e0; height: 25px; border-radius: 15px; margin: 0 15px; overflow: hidden;">
+                            <div id="sleepingBar" style="background: #e74c3c; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                        </div>
+                        <span id="sleepingPercentage" style="font-weight: bold;">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Attention Monitoring (Simplified - Demo Mode)
+        let attentionMonitoring = false;
+        let attentionVideoStream = null;
+        let attentionStats = { attentive: 0, distracted: 0, sleeping: 0 };
+
+        async function startAttentionMonitoring() {
+            try {
+                attentionVideoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('attentionVideo').srcObject = attentionVideoStream;
+                
+                attentionMonitoring = true;
+                document.getElementById('startAttentionBtn').style.display = 'none';
+                document.getElementById('stopAttentionBtn').style.display = 'inline-block';
+                document.getElementById('attentionStats').style.display = 'block';
+                
+                simulateAttentionDetection();
+            } catch (error) {
+                alert('Camera access denied. Please allow camera permission.');
+            }
+        }
+
+        function stopAttentionMonitoring() {
+            attentionMonitoring = false;
+            if (attentionVideoStream) {
+                attentionVideoStream.getTracks().forEach(track => track.stop());
+            }
+            document.getElementById('startAttentionBtn').style.display = 'inline-block';
+            document.getElementById('stopAttentionBtn').style.display = 'none';
+            
+            alert(`Session ended!\nAttentive: ${attentionStats.attentive.toFixed(1)}%\nDistracted: ${attentionStats.distracted.toFixed(1)}%\nSleeping: ${attentionStats.sleeping.toFixed(1)}%`);
+        }
+
+        // ── QUIZ SYSTEM (localStorage-based) ─────────────────────────────────
+        let qzQuestionCount = 0;
+        let qzCurrentQuizId = null;
+        let qzTimerInterval = null;
+        let qzTimeLeft = 0;
+
+        // ── Faculty: Add question block ───────────────────────────────────────
+        function qzAddQuestion() {
+            qzQuestionCount++;
+            const idx = qzQuestionCount;
+            const container = document.getElementById('qzQuestionsContainer');
+            const div = document.createElement('div');
+            div.id = `qz-card-${idx}`;
+            div.style.cssText = 'background:#f8f9fa;border:1px solid #e0e0e0;border-radius:8px;padding:18px;margin-bottom:12px;position:relative;';
+            div.innerHTML = `
+                <button onclick="document.getElementById('qz-card-${idx}').remove()" style="position:absolute;top:10px;right:10px;background:#e74c3c;color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:13px;">×</button>
+                <div style="font-weight:700;color:#3949ab;margin-bottom:10px;">Question ${idx}</div>
+                <input type="text" id="qz-q-${idx}" placeholder="Enter question..." style="width:100%;padding:9px;border:1px solid #ddd;border-radius:5px;margin-bottom:10px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                    ${[1,2,3,4].map(n => `
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input type="radio" name="qz-correct-${idx}" value="${n}" id="qz-r-${idx}-${n}">
+                        <input type="text" id="qz-opt-${idx}-${n}" placeholder="Option ${n}" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:5px;">
+                    </div>`).join('')}
+                </div>
+                <p style="font-size:11px;color:#999;margin-top:6px;"><i class="fas fa-info-circle"></i> Select radio button next to the correct answer</p>`;
+            container.appendChild(div);
+        }
+
+        // ── Faculty: Save quiz to localStorage ────────────────────────────────
+        function qzSaveQuiz() {
+            const title    = document.getElementById('qzTitle').value.trim();
+            const subject  = document.getElementById('qzSubject').value.trim();
+            const chapter  = document.getElementById('qzChapter').value.trim();
+            const timeLimit= parseInt(document.getElementById('qzTime').value) || 30;
+            const deadline = document.getElementById('qzDeadline').value;
+
+            if (!title || !subject || !chapter || !deadline) {
+                alert('Please fill in all quiz details (title, subject, chapter, deadline).'); return;
+            }
+
+            const cards = document.querySelectorAll('[id^="qz-card-"]');
+            if (!cards.length) { alert('Please add at least one question.'); return; }
+
+            const questions = [];
+            let valid = true;
+            cards.forEach(card => {
+                const idx = card.id.split('-')[2];
+                const qText   = document.getElementById(`qz-q-${idx}`).value.trim();
+                const opts    = [1,2,3,4].map(n => document.getElementById(`qz-opt-${idx}-${n}`).value.trim());
+                const correct = card.querySelector(`input[name="qz-correct-${idx}"]:checked`)?.value;
+                if (!qText || opts.some(o => !o) || !correct) { valid = false; return; }
+                questions.push({ id: idx, question: qText, options: opts, correct: parseInt(correct) });
+            });
+
+            if (!valid) { alert('Complete all questions and select the correct answer for each.'); return; }
+
+            const quizzes = JSON.parse(localStorage.getItem('sc_quizzes') || '[]');
+            const quiz = {
+                id: Date.now(),
+                title, subject, chapter, timeLimit, deadline,
+                questions,
+                createdAt: new Date().toLocaleString()
+            };
+            quizzes.push(quiz);
+            localStorage.setItem('sc_quizzes', JSON.stringify(quizzes));
+
+            alert(`✅ Quiz "${title}" saved successfully with ${questions.length} question(s)!`);
+            closeModal('createQuizModal');
+
+            // Reset form
+            document.getElementById('qzTitle').value = '';
+            document.getElementById('qzSubject').value = '';
+            document.getElementById('qzChapter').value = '';
+            document.getElementById('qzTime').value = 30;
+            document.getElementById('qzDeadline').value = '';
+            document.getElementById('qzQuestionsContainer').innerHTML = '';
+            qzQuestionCount = 0;
+            updateRecentActivity(`New quiz "${title}" created for ${subject}`);
+        }
+
+        // ── Faculty: Load results dropdown ────────────────────────────────────
+        function qzOpenResults() {
+            const quizzes = JSON.parse(localStorage.getItem('sc_quizzes') || '[]');
+            const sel = document.getElementById('resultsQuizSelect');
+            sel.innerHTML = '<option value="">-- Choose a quiz --</option>' +
+                quizzes.map(q => `<option value="${q.id}">${q.title} (${q.subject})</option>`).join('');
+            document.getElementById('resultsContent').style.display = 'none';
+            openModal('quizResultsModal');
+        }
+
+        function qzLoadResults(quizId) {
+            if (!quizId) return;
+            const quizzes  = JSON.parse(localStorage.getItem('sc_quizzes') || '[]');
+            const attempts = JSON.parse(localStorage.getItem('sc_attempts') || '[]');
+            const quiz     = quizzes.find(q => q.id == quizId);
+            if (!quiz) return;
+
+            const quizAttempts = attempts.filter(a => a.quizId == quizId);
+            document.getElementById('resultsContent').style.display = 'block';
+
+            if (!quizAttempts.length) {
+                document.getElementById('resAvg').textContent  = '—';
+                document.getElementById('resHigh').textContent = '—';
+                document.getElementById('resLow').textContent  = '—';
+                document.getElementById('resTotal').textContent = '0';
+                document.getElementById('resultsTableBody').innerHTML =
+                    '<tr><td colspan="6" style="text-align:center;padding:20px;color:#aaa;">No attempts yet.</td></tr>';
+                return;
+            }
+
+            const scores = quizAttempts.map(a => a.score);
+            const total  = quiz.questions.length;
+            const avg    = Math.round(scores.reduce((a,b) => a+b, 0) / scores.length / total * 100);
+
+            document.getElementById('resAvg').textContent   = avg + '%';
+            document.getElementById('resHigh').textContent  = Math.max(...scores) + '/' + total;
+            document.getElementById('resLow').textContent   = Math.min(...scores) + '/' + total;
+            document.getElementById('resTotal').textContent = quizAttempts.length;
+
+            document.getElementById('resultsTableBody').innerHTML = quizAttempts.map((a, i) => {
+                const pct    = Math.round(a.score / total * 100);
+                const passed = pct >= 50;
+                return `<tr style="border-bottom:1px solid #eee;">
+                    <td style="padding:10px;">${i+1}</td>
+                    <td style="padding:10px;">${a.studentName}</td>
+                    <td style="padding:10px;">${a.score}/${total}</td>
+                    <td style="padding:10px;">${pct}%</td>
+                    <td style="padding:10px;">
+                        <span style="background:${passed?'#e8f5e9':'#fce4ec'};color:${passed?'#2e7d32':'#c62828'};padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;">
+                            ${passed ? 'Pass' : 'Fail'}
+                        </span>
+                    </td>
+                    <td style="padding:10px;font-size:12px;color:#666;">${a.date}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        // ── Student: Open attend quiz modal ───────────────────────────────────
+        function qzOpenAttend() {
+            document.getElementById('quizListView').style.display    = 'block';
+            document.getElementById('quizAttemptView').style.display = 'none';
+            document.getElementById('quizScoreView').style.display   = 'none';
+
+            const quizzes  = JSON.parse(localStorage.getItem('sc_quizzes') || '[]');
+            const attempts = JSON.parse(localStorage.getItem('sc_attempts') || '[]');
+            const myAttempts = attempts.filter(a => a.studentId === currentUser).map(a => a.quizId);
+            const now = new Date();
+            const active = quizzes.filter(q => new Date(q.deadline) > now);
+
+            const el = document.getElementById('availableQuizzesList');
+            if (!active.length) {
+                el.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px;">No active quizzes available.</p>';
+            } else {
+                el.innerHTML = active.map(q => {
+                    const attempted = myAttempts.includes(q.id);
+                    return `<div style="background:#f8f9fa;border-left:4px solid #3949ab;border-radius:8px;padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <strong style="color:#1a237e;">${q.title}</strong>
+                            <div style="font-size:13px;color:#666;margin-top:4px;">
+                                <span style="background:#e8eaf6;color:#3949ab;padding:2px 8px;border-radius:10px;font-size:12px;">${q.subject}</span>
+                                &nbsp;${q.chapter} &nbsp;|&nbsp; ${q.questions.length} Qs &nbsp;|&nbsp; ${q.timeLimit} min
+                                &nbsp;|&nbsp; Deadline: ${new Date(q.deadline).toLocaleString()}
+                            </div>
+                        </div>
+                        ${attempted
+                            ? '<span style="background:#e8f5e9;color:#2e7d32;padding:6px 14px;border-radius:5px;font-size:13px;">✓ Attempted</span>'
+                            : `<button onclick="qzStartAttempt(${q.id})" style="background:linear-gradient(135deg,#1a237e,#3949ab);color:#fff;border:none;padding:8px 18px;border-radius:5px;cursor:pointer;white-space:nowrap;"><i class="fas fa-play"></i> Attempt</button>`
+                        }
+                    </div>`;
+                }).join('');
+            }
+            openModal('attendQuizModal');
+        }
+
+        // ── Student: Start quiz attempt ───────────────────────────────────────
+        function qzStartAttempt(quizId) {
+            const quizzes = JSON.parse(localStorage.getItem('sc_quizzes') || '[]');
+            const quiz    = quizzes.find(q => q.id == quizId);
+            if (!quiz) return;
+
+            qzCurrentQuizId = quizId;
+            document.getElementById('quizListView').style.display    = 'none';
+            document.getElementById('quizAttemptView').style.display = 'block';
+            document.getElementById('quizScoreView').style.display   = 'none';
+            document.getElementById('attemptQuizTitle').textContent  = quiz.title;
+
+            // Render questions
+            document.getElementById('mcqContainer').innerHTML = quiz.questions.map((q, i) => `
+                <div style="background:#f8f9fa;border:1px solid #e0e0e0;border-radius:8px;padding:18px;margin-bottom:12px;">
+                    <div style="font-weight:600;color:#2c3e50;margin-bottom:12px;">${i+1}. ${q.question}</div>
+                    ${q.options.map((opt, oi) => `
+                    <label style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;margin-bottom:6px;cursor:pointer;border:1px solid #ddd;transition:background .2s;"
+                        onmouseover="this.style.background='#e8eaf6'" onmouseout="this.style.background=''">
+                        <input type="radio" name="mcq-${q.id}" value="${oi+1}" style="accent-color:#3949ab;">
+                        ${opt}
+                    </label>`).join('')}
+                </div>`).join('');
+
+            // Start countdown timer
+            qzTimeLeft = quiz.timeLimit * 60;
+            clearInterval(qzTimerInterval);
+            qzTimerInterval = setInterval(() => {
+                qzTimeLeft--;
+                const m = String(Math.floor(qzTimeLeft / 60)).padStart(2,'0');
+                const s = String(qzTimeLeft % 60).padStart(2,'0');
+                document.getElementById('quizTimerDisplay').textContent = `${m}:${s}`;
+                const box = document.getElementById('quizTimerBox');
+                box.style.background = qzTimeLeft <= 60 ? '#e74c3c' : '#1a237e';
+                if (qzTimeLeft <= 0) { clearInterval(qzTimerInterval); qzSubmitAttempt(); }
+            }, 1000);
+        }
+
+        // ── Student: Submit quiz ──────────────────────────────────────────────
+        function qzSubmitAttempt() {
+            clearInterval(qzTimerInterval);
+            const quizzes = JSON.parse(localStorage.getItem('sc_quizzes') || '[]');
+            const quiz    = quizzes.find(q => q.id == qzCurrentQuizId);
+            if (!quiz) return;
+
+            let score = 0;
+            quiz.questions.forEach(q => {
+                const checked = document.querySelector(`input[name="mcq-${q.id}"]:checked`);
+                if (checked && parseInt(checked.value) === q.correct) score++;
+            });
+
+            // Save attempt
+            const attempts = JSON.parse(localStorage.getItem('sc_attempts') || '[]');
+            attempts.push({
+                quizId:      qzCurrentQuizId,
+                quizTitle:   quiz.title,
+                subject:     quiz.subject,
+                studentId:   currentUser,
+                studentName: getUserName(currentUser, currentRole),
+                score,
+                total:       quiz.questions.length,
+                date:        new Date().toLocaleString()
+            });
+            localStorage.setItem('sc_attempts', JSON.stringify(attempts));
+
+            // Show score
+            document.getElementById('quizAttemptView').style.display = 'none';
+            document.getElementById('quizScoreView').style.display   = 'block';
+            const pct = Math.round(score / quiz.questions.length * 100);
+            document.getElementById('scoreDisplay').textContent = `${score} / ${quiz.questions.length}`;
+            document.getElementById('scorePercent').textContent = `${pct}%`;
+            document.getElementById('scoreMsg').innerHTML = pct >= 50
+                ? '<span style="color:#27ae60;font-size:1.1rem;">✅ Passed! Great work.</span>'
+                : '<span style="color:#e74c3c;font-size:1.1rem;">❌ Below 50%. Keep practising!</span>';
+        }
+
+        function qzCancelAttempt() {
+            clearInterval(qzTimerInterval);
+            document.getElementById('quizAttemptView').style.display = 'none';
+            document.getElementById('quizListView').style.display    = 'block';
+        }
+
+        function qzBackToList() {
+            document.getElementById('quizScoreView').style.display = 'none';
+            qzOpenAttend();
+        }
+
+        function qzCloseAttend() {
+            clearInterval(qzTimerInterval);
+            closeModal('attendQuizModal');
+        }
+
+        // ── Student: My Results ───────────────────────────────────────────────
+        function qzOpenMyResults() {
+            const attempts = JSON.parse(localStorage.getItem('sc_attempts') || '[]');
+            const mine     = attempts.filter(a => a.studentId === currentUser);
+            const el       = document.getElementById('myResultsList');
+            if (!mine.length) {
+                el.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px;">No quiz attempts yet.</p>';
+            } else {
+                el.innerHTML = mine.map(a => {
+                    const pct    = Math.round(a.score / a.total * 100);
+                    const passed = pct >= 50;
+                    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#f8f9fa;border-radius:8px;margin-bottom:10px;border-left:4px solid ${passed?'#27ae60':'#e74c3c'};">
+                        <div>
+                            <strong style="color:#1a237e;">${a.quizTitle}</strong>
+                            <div style="font-size:13px;color:#666;margin-top:3px;">${a.subject} &nbsp;|&nbsp; ${a.date}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:1.5rem;font-weight:700;color:#1a237e;">${a.score}/${a.total}</div>
+                            <span style="background:${passed?'#e8f5e9':'#fce4ec'};color:${passed?'#2e7d32':'#c62828'};padding:2px 10px;border-radius:10px;font-size:12px;font-weight:600;">${pct}% ${passed?'Pass':'Fail'}</span>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+            openModal('myResultsModal');
+        }
+
+        // Override openModal to hook quiz-specific logic
+        const _origOpenModal = openModal;
+        openModal = function(id) {
+            if (id === 'createQuizModal') {
+                _origOpenModal(id);
+                // Set default deadline to tomorrow
+                const d = new Date(); d.setDate(d.getDate()+1);
+                document.getElementById('qzDeadline').value = d.toISOString().slice(0,16);
+                if (!document.getElementById('qzQuestionsContainer').children.length) qzAddQuestion();
+                return;
+            }
+            if (id === 'quizResultsModal') { qzOpenResults(); return; }
+            if (id === 'attendQuizModal')  { qzOpenAttend();  return; }
+            if (id === 'myResultsModal')   { qzOpenMyResults(); return; }
+            _origOpenModal(id);
+        };
+
+        function simulateAttentionDetection() {
+            if (!attentionMonitoring) return;
+            
+            // Simulate detection (replace with actual API call)
+            const statuses = ['attentive', 'attentive', 'attentive', 'distracted', 'sleeping'];
+            const status = statuses[Math.floor(Math.random() * statuses.length)];
+            const confidence = 0.85 + Math.random() * 0.15;
+            
+            // Update stats
+            attentionStats.attentive = Math.max(0, attentionStats.attentive + (status === 'attentive' ? 2 : -1));
+            attentionStats.distracted = Math.max(0, attentionStats.distracted + (status === 'distracted' ? 2 : -1));
+            attentionStats.sleeping = Math.max(0, attentionStats.sleeping + (status === 'sleeping' ? 2 : -1));
+            
+            const total = attentionStats.attentive + attentionStats.distracted + attentionStats.sleeping;
+            if (total > 0) {
+                attentionStats.attentive = (attentionStats.attentive / total) * 100;
+                attentionStats.distracted = (attentionStats.distracted / total) * 100;
+                attentionStats.sleeping = (attentionStats.sleeping / total) * 100;
+            }
+            
+            // Update UI
+            document.getElementById('attentionStatus').textContent = status.toUpperCase();
+            document.getElementById('attentionStatus').style.color = status === 'attentive' ? '#27ae60' : status === 'distracted' ? '#f39c12' : '#e74c3c';
+            document.getElementById('attentionConfidence').textContent = `${(confidence * 100).toFixed(1)}%`;
+            
+            document.getElementById('attentivePercentage').textContent = `${attentionStats.attentive.toFixed(1)}%`;
+            document.getElementById('distractedPercentage').textContent = `${attentionStats.distracted.toFixed(1)}%`;
+            document.getElementById('sleepingPercentage').textContent = `${attentionStats.sleeping.toFixed(1)}%`;
+            
+            document.getElementById('attentiveBar').style.width = `${attentionStats.attentive}%`;
+            document.getElementById('distractedBar').style.width = `${attentionStats.distracted}%`;
+            document.getElementById('sleepingBar').style.width = `${attentionStats.sleeping}%`;
+            
+            setTimeout(simulateAttentionDetection, 2000);
+        }
+    </script>

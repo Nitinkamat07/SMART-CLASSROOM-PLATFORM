@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Classroom - Gemini AI Chatbot</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        
+        .chat-container { width: 90%; max-width: 800px; height: 90vh; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow: hidden; }
+        
+        .chat-header { background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%); color: white; padding: 20px; text-align: center; }
+        .chat-header h1 { font-size: 1.5rem; margin-bottom: 5px; color: #ffd700; }
+        .chat-header p { font-size: 0.9rem; opacity: 0.9; }
+        
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; background: #f8f9fa; }
+        .message { margin-bottom: 20px; display: flex; gap: 10px; animation: fadeIn 0.3s; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .message-content { max-width: 70%; padding: 15px; border-radius: 15px; }
+        .user-message { margin-left: auto; }
+        .user-message .message-content { background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%); color: white; }
+        .bot-message .message-content { background: white; color: #333; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        
+        .message-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .bot-avatar { background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%); color: #1a237e; }
+        .user-avatar { background: #3949ab; color: white; }
+        
+        .chat-input-container { padding: 20px; background: white; border-top: 1px solid #e0e0e0; }
+        .chat-input-wrapper { display: flex; gap: 10px; }
+        .chat-input { flex: 1; padding: 15px; border: 2px solid #e0e0e0; border-radius: 25px; font-size: 1rem; outline: none; transition: border 0.3s; }
+        .chat-input:focus { border-color: #3949ab; }
+        
+        .send-btn { padding: 15px 30px; background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%); color: #1a237e; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+        .send-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4); }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .typing-indicator { display: none; padding: 10px 15px; background: white; border-radius: 15px; width: fit-content; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .typing-indicator span { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #3949ab; margin: 0 2px; animation: typing 1.4s infinite; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-10px); } }
+        
+        .quick-actions { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .quick-btn { padding: 8px 15px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 20px; font-size: 0.9rem; cursor: pointer; transition: all 0.3s; }
+        .quick-btn:hover { background: #3949ab; color: white; border-color: #3949ab; }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🎓 Smart Classroom AI Assistant</h1>
+            <p>Powered by Google Gemini AI</p>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot-message">
+                <div class="message-avatar bot-avatar">🤖</div>
+                <div class="message-content">
+                    <p>Hello! I'm your Smart Classroom AI Assistant powered by Google Gemini. I can help you with:</p>
+                    <ul style="margin-top: 10px; padding-left: 20px;">
+                        <li>Classroom availability and schedules</li>
+                        <li>Attendance information</li>
+                        <li>Timetable queries</li>
+                        <li>Faculty information</li>
+                        <li>General academic questions</li>
+                    </ul>
+                    <p style="margin-top: 10px;">How can I assist you today?</p>
+                </div>
+            </div>
+            <div class="typing-indicator" id="typingIndicator">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <div class="quick-actions">
+                <button class="quick-btn" onclick="sendQuickMessage('What classrooms are available?')">📍 Room Availability</button>
+                <button class="quick-btn" onclick="sendQuickMessage('Show my attendance')">📊 My Attendance</button>
+                <button class="quick-btn" onclick="sendQuickMessage('What is my schedule today?')">📅 Today's Schedule</button>
+                <button class="quick-btn" onclick="sendQuickMessage('Faculty contact information')">👨‍🏫 Faculty Info</button>
+            </div>
+            <div class="chat-input-wrapper">
+                <input type="text" id="chatInput" class="chat-input" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GEMINI_API_KEY = 'AIzaSyDxZvqLqH_8Yz9xKjPmNrStUvWxYzAbCdE'; // Replace with your actual API key
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+        
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+        
+        const systemContext = `You are an AI assistant for a Smart Classroom Management System at a university. 
+        
+Current system data:
+- Total Classrooms: 15 (A101, A102, B201, B202, C301, etc.)
+- Total Students: 450
+- Today's Attendance Rate: 87%
+- Available Rooms: A101 (50 capacity), B201 (60 capacity), C301 (80 capacity)
+- Occupied Rooms: A102 (Data Structures class), B202 (Mathematics class)
+
+Sample Schedule:
+- Data Structures: 9:00 AM - Room A101
+- Mathematics: 11:00 AM - Room B202
+- Physics: 2:00 PM - Room C301
+
+Faculty:
+- Dr. John Smith (Computer Science) - john.smith@university.edu
+- Prof. Sarah Johnson (Mathematics) - sarah.johnson@university.edu
+
+Provide helpful, concise, and professional responses about classroom management, schedules, attendance, and academic queries.`;
+
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+            
+            addMessage(message, 'user');
+            chatInput.value = '';
+            sendBtn.disabled = true;
+            
+            showTypingIndicator();
+            
+            try {
+                const response = await callGeminiAPI(message);
+                hideTypingIndicator();
+                addMessage(response, 'bot');
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('I apologize, but I encountered an error. Please try again or contact support.', 'bot');
+                console.error('Error:', error);
+            }
+            
+            sendBtn.disabled = false;
+        }
+        
+        async function callGeminiAPI(userMessage) {
+            const requestBody = {
+                contents: [{
+                    parts: [{
+                        text: `${systemContext}\n\nUser: ${userMessage}\n\nAssistant:`
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 500,
+                }
+            };
+            
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            });
+            
+            if (!response.ok) {
+                throw new Error('API request failed');
+            }
+            
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        }
+        
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = `message-avatar ${sender}-avatar`;
+            avatar.textContent = sender === 'bot' ? '🤖' : '👤';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.innerHTML = formatMessage(text);
+            
+            if (sender === 'user') {
+                messageDiv.appendChild(content);
+                messageDiv.appendChild(avatar);
+            } else {
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(content);
+            }
+            
+            chatMessages.insertBefore(messageDiv, typingIndicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function formatMessage(text) {
+            // Convert markdown-style formatting
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            text = text.replace(/\n/g, '<br>');
+            return text;
+        }
+        
+        function showTypingIndicator() {
+            typingIndicator.style.display = 'block';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function hideTypingIndicator() {
+            typingIndicator.style.display = 'none';
+        }
+        
+        function sendQuickMessage(message) {
+            chatInput.value = message;
+            sendMessage();
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+        
+        // Focus input on load
+        chatInput.focus();
+    </script>
+</body>
+</html>

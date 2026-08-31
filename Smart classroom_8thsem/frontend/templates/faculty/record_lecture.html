@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Lecture</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .container { max-width: 800px; margin: 50px auto; padding: 20px; }
+        .card { background: white; border-radius: 10px; padding: 40px; box-shadow: 0 2px 20px rgba(0,0,0,0.1); }
+        h1 { color: #333; margin-bottom: 30px; text-align: center; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #555; font-weight: bold; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+        .btn { padding: 15px 30px; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; transition: opacity 0.3s; }
+        .btn:hover { opacity: 0.9; }
+        .btn-start { background: #28a745; color: white; }
+        .btn-stop { background: #dc3545; color: white; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .status { text-align: center; padding: 20px; margin-top: 20px; border-radius: 5px; font-weight: bold; }
+        .status-recording { background: #fff3cd; color: #856404; }
+        .status-processing { background: #cce5ff; color: #004085; }
+        .recording-indicator { display: none; text-align: center; margin: 20px 0; }
+        .recording-indicator.active { display: block; }
+        .pulse { width: 20px; height: 20px; background: red; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; margin-right: 10px; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🎙️ Record Lecture</h1>
+            
+            <div class="form-group">
+                <label>Lecture Title</label>
+                <input type="text" id="lectureTitle" placeholder="Enter lecture title">
+            </div>
+
+            <div class="form-group">
+                <label>Schedule</label>
+                <select id="scheduleSelect">
+                    <option value="">Select a schedule</option>
+                </select>
+            </div>
+
+            <div class="recording-indicator" id="recordingIndicator">
+                <span class="pulse"></span>
+                <span>Recording in progress...</span>
+            </div>
+
+            <button class="btn btn-start" id="startBtn" onclick="startRecording()">Start Recording</button>
+            <button class="btn btn-stop" id="stopBtn" onclick="stopRecording()" style="display: none;">Stop Recording</button>
+
+            <div class="status" id="statusMessage" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentLectureId = null;
+
+        async function startRecording() {
+            const title = document.getElementById('lectureTitle').value;
+            const scheduleId = document.getElementById('scheduleSelect').value;
+
+            if (!title || !scheduleId) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/lecture/start-recording', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, schedule_id: scheduleId })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    currentLectureId = data.lecture_id;
+                    document.getElementById('startBtn').style.display = 'none';
+                    document.getElementById('stopBtn').style.display = 'block';
+                    document.getElementById('recordingIndicator').classList.add('active');
+                    showStatus('Recording started successfully', 'recording');
+                }
+            } catch (error) {
+                alert('Error starting recording: ' + error.message);
+            }
+        }
+
+        async function stopRecording() {
+            if (!currentLectureId) return;
+
+            try {
+                const response = await fetch('/api/lecture/stop-recording', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lecture_id: currentLectureId })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('startBtn').style.display = 'block';
+                    document.getElementById('stopBtn').style.display = 'none';
+                    document.getElementById('recordingIndicator').classList.remove('active');
+                    showStatus('Recording stopped. Processing lecture notes...', 'processing');
+                    currentLectureId = null;
+                }
+            } catch (error) {
+                alert('Error stopping recording: ' + error.message);
+            }
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('statusMessage');
+            status.textContent = message;
+            status.className = 'status status-' + type;
+            status.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

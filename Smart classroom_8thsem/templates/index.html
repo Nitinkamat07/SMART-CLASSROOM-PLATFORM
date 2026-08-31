@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Classroom Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-graduation-cap"></i>
+                Smart Classroom
+            </div>
+            <div class="nav-menu">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/login" class="nav-link">Login</a>
+                <a href="#about" class="nav-link">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>AI-Powered Smart Classroom Management</h1>
+                <p>Revolutionizing education with face recognition attendance, real-time monitoring, and intelligent optimization</p>
+                <div class="hero-buttons">
+                    <a href="/login" class="btn btn-primary">Get Started</a>
+                    <a href="#features" class="btn btn-secondary">Learn More</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="container">
+                <h2>Key Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-camera"></i>
+                        <h3>Face Recognition</h3>
+                        <p>Automated attendance with advanced AI face recognition technology</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Real-time Analytics</h3>
+                        <p>Live classroom monitoring and usage optimization</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-robot"></i>
+                        <h3>AI Chatbot</h3>
+                        <p>Intelligent assistant for students and faculty queries</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-cogs"></i>
+                        <h3>Smart Optimization</h3>
+                        <p>AI-powered classroom allocation and scheduling</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="live-status">
+            <div class="container">
+                <h2>Live Classroom Status</h2>
+                <div id="classroom-grid" class="classroom-grid">
+                    <!-- Classroom cards will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Chatbot Widget -->
+        <div id="chatbot-widget" class="chatbot-widget">
+            <div class="chatbot-header">
+                <i class="fas fa-robot"></i>
+                <span>Smart Assistant</span>
+                <button id="chatbot-toggle" class="chatbot-toggle">
+                    <i class="fas fa-minus"></i>
+                </button>
+            </div>
+            <div class="chatbot-body">
+                <div id="chatbot-messages" class="chatbot-messages">
+                    <div class="message bot-message">
+                        <p>Hello! I'm your smart classroom assistant. How can I help you today?</p>
+                    </div>
+                </div>
+                <div class="chatbot-input">
+                    <input type="text" id="chatbot-input" placeholder="Type your message...">
+                    <button id="chatbot-send"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Smart Classroom Management System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15
+    container_name: classroom_db
+    environment:
+      POSTGRES_DB: classroom_management_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - classroom_network
+    restart: unless-stopped
+
+  # Redis for caching and session storage
+  redis:
+    image: redis:7-alpine
+    container_name: classroom_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - classroom_network
+    restart: unless-stopped
+
+  # Main Application
+  app:
+    build: .
+    container_name: classroom_app
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres123@db:5432/classroom_management_db
+      - REDIS_URL=redis://redis:6379/0
+      - FLASK_ENV=development
+      - SECRET_KEY=your-secret-key-here
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - S3_BUCKET=${S3_BUCKET}
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./face_data:/app/face_data
+      - ./ml_models:/app/ml_models
+      - ./logs:/app/logs
+    depends_on:
+      - db
+      - redis
+    networks:
+      - classroom_network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: classroom_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deployment/nginx.conf:/etc/nginx/nginx.conf
+      - ./deployment/ssl:/etc/nginx/ssl
+    depends_on:
+      - app
+    networks:
+      - classroom_network
+    restart: unless-stopped
+
+  # Monitoring with Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: classroom_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deployment/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - classroom_network
+    restart: unless-stopped
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: classroom_grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./deployment/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./deployment/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+    networks:
+      - classroom_network
+    restart: unless-stopped
+
+  # ML Model Training Service
+  ml_trainer:
+    build:
+      context: .
+      dockerfile: Dockerfile.ml
+    container_name: classroom_ml_trainer
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres123@db:5432/classroom_management_db
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./face_data:/app/face_data
+      - ./ml_models:/app/ml_models
+    depends_on:
+      - db
+      - redis
+    networks:
+      - classroom_network
+    restart: unless-stopped
+    command: python ml_training_service.py
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  classroom_network:
+    driver: bridge
