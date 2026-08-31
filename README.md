@@ -4,6 +4,17 @@
 
 A cutting-edge, production-ready classroom management platform powered by artificial intelligence. Designed to revolutionize educational institutions by automating attendance tracking, real-time monitoring, and data-driven insights for optimized classroom operations.
 
+## 🌐 Live Demo
+
+**[👉 Try the Live Application Here](https://smartclassroommanagement.vercel.app/)** 🚀
+
+> **Demo Credentials:**
+> - Admin: `admin` / `admin123`
+> - Faculty: `faculty` / `faculty123`  
+> - Student: `20221CSE0308` / `20221CSE0308`
+
+---
+
 ### What This System Does
 
 🎯 **Smart Attendance** - AI-powered face recognition for automated student attendance without manual intervention
